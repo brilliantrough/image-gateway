@@ -41,12 +41,22 @@ export const imageGenerationRequestSchema = z
     }
   });
 
-export const imageGenerationDataSchema = z.object({
-  b64_json: z.string().min(1).nullable().default(null),
-  url: z.string().min(1).nullable().default(null),
-  mime_type: z.string().min(1).nullable().default(null),
-  revised_prompt: z.string().min(1).nullable().default(null),
-});
+export const imageGenerationDataSchema = z
+  .object({
+    b64_json: z.string().min(1).nullable().default(null),
+    url: z.string().min(1).nullable().default(null),
+    mime_type: z.string().min(1).nullable().default(null),
+    revised_prompt: z.string().min(1).nullable().default(null),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.b64_json && !value.url) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Each image result must include either 'b64_json' or 'url'.",
+        path: ["b64_json"],
+      });
+    }
+  });
 
 export const imageGenerationResponseSchema = z.object({
   created: z.number().int(),

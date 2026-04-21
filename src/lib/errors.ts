@@ -1,3 +1,5 @@
+import type { GatewayErrorPayload } from "../schemas/error.js";
+
 export class GatewayError extends Error {
   readonly statusCode: number;
   readonly type: string;
@@ -27,5 +29,31 @@ export class GatewayError extends Error {
 }
 
 export function isGatewayError(value: unknown): value is GatewayError {
-  return value instanceof GatewayError;
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.statusCode === "number" &&
+    typeof candidate.type === "string" &&
+    typeof candidate.code === "string" &&
+    typeof candidate.message === "string"
+  );
+}
+
+export function toGatewayErrorPayload(
+  error: GatewayError,
+  fallbackRequestId: string,
+): GatewayErrorPayload {
+  return {
+    error: {
+      type: error.type,
+      code: error.code,
+      message: error.message,
+      param: error.param,
+      provider: error.provider,
+      request_id: error.requestId ?? fallbackRequestId,
+    },
+  };
 }

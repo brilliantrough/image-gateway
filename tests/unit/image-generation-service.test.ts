@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { imageGenerationRequestSchema } from "../../src/schemas/image-generation.js";
+import {
+  imageGenerationDataSchema,
+  imageGenerationRequestSchema,
+} from "../../src/schemas/image-generation.js";
 import { inferImageRequestMode } from "../../src/services/image-generation-service.js";
 
 describe("inferImageRequestMode", () => {
@@ -52,5 +55,16 @@ describe("inferImageRequestMode", () => {
         mask: "https://example.com/mask.png",
       }),
     ).toThrow(/mask requires 'image' or 'images'/i);
+  });
+
+  it("rejects image results without a payload", () => {
+    expect(() =>
+      imageGenerationDataSchema.parse({
+        b64_json: null,
+        url: null,
+        mime_type: "image/png",
+        revised_prompt: null,
+      }),
+    ).toThrow(/must include either 'b64_json' or 'url'/i);
   });
 });

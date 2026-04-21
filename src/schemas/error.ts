@@ -12,3 +12,4 @@ export const gatewayErrorSchema = z.object({
 });
 
 export type GatewayErrorPayload = z.infer<typeof gatewayErrorSchema>;
+export type GatewayErrorBody = GatewayErrorPayload["error"];
