@@ -32,4 +32,25 @@ describe("inferImageRequestMode", () => {
 
     expect(inferImageRequestMode(parsed)).toBe("edit");
   });
+
+  it("rejects requests that provide both image and images", () => {
+    expect(() =>
+      imageGenerationRequestSchema.parse({
+        model: "gpt-image-1",
+        prompt: "orange cat",
+        image: "https://example.com/image.png",
+        images: ["https://example.com/image-2.png"],
+      }),
+    ).toThrow(/either 'image' or 'images'/i);
+  });
+
+  it("rejects mask-only edit requests without input images", () => {
+    expect(() =>
+      imageGenerationRequestSchema.parse({
+        model: "gpt-image-1",
+        prompt: "replace the sky",
+        mask: "https://example.com/mask.png",
+      }),
+    ).toThrow(/mask requires 'image' or 'images'/i);
+  });
 });

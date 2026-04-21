@@ -4,6 +4,7 @@ export class GatewayError extends Error {
   readonly code: string;
   readonly param?: string;
   readonly provider?: string;
+  readonly requestId?: string;
 
   constructor(options: {
     statusCode: number;
@@ -12,6 +13,7 @@ export class GatewayError extends Error {
     message: string;
     param?: string;
     provider?: string;
+    requestId?: string;
   }) {
     super(options.message);
     this.name = "GatewayError";
@@ -20,6 +22,7 @@ export class GatewayError extends Error {
     this.code = options.code;
     this.param = options.param;
     this.provider = options.provider;
+    this.requestId = options.requestId;
   }
 }
 
