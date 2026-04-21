@@ -23,6 +23,7 @@ export const imageGenerationRequestSchema = z
     user: z.string().min(1).optional(),
     extra_body: z.record(z.unknown()).default({}),
   })
+  .strict()
   .superRefine((value, ctx) => {
     if (value.image && value.images.length > 0) {
       ctx.addIssue({

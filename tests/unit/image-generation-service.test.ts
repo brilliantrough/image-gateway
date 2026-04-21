@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   imageGenerationDataSchema,
   imageGenerationRequestSchema,
+  imageGenerationResponseSchema,
 } from "../../src/schemas/image-generation.js";
 import { inferImageRequestMode } from "../../src/services/image-generation-service.js";
 
@@ -66,5 +67,32 @@ describe("inferImageRequestMode", () => {
         revised_prompt: null,
       }),
     ).toThrow(/must include either 'b64_json' or 'url'/i);
+  });
+
+  it("rejects unknown top-level request fields", () => {
+    expect(() =>
+      imageGenerationRequestSchema.parse({
+        model: "gpt-image-1",
+        prompt: "orange cat",
+        foo: "bar",
+      }),
+    ).toThrow(/unrecognized key/i);
+  });
+
+  it("requires request_id and usage.image_count in responses", () => {
+    expect(() =>
+      imageGenerationResponseSchema.parse({
+        created: 1,
+        data: [
+          {
+            b64_json: "abc",
+            url: null,
+            mime_type: "image/png",
+            revised_prompt: null,
+          },
+        ],
+        usage: {},
+      }),
+    ).toThrow();
   });
 });
