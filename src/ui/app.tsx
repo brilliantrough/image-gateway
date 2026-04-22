@@ -28,7 +28,7 @@ export function UpstreamConfigPage() {
     <main className="page-shell">
       <h1>Upstream Config Center</h1>
       <ActionBar
-        saveState={validation.canSave ? "Ready to save" : "Validation failed"}
+        saveState={validation.canSave ? "Unsaved changes" : "Validation failed"}
         onAddChannel={() => setChannels((current) => [...current, createEmptyChannelConfig()])}
         onAddModel={() => {}}
         onValidate={() => {}}
@@ -37,9 +37,12 @@ export function UpstreamConfigPage() {
         disableAddModel
         disableValidate
         disableExport
-        disableSave={!validation.canSave}
+        disableSave
       />
-      <GlobalValidationSummary globalErrors={validation.globalErrors} />
+      <GlobalValidationSummary
+        globalErrors={validation.globalErrors}
+        sectionErrors={validation.sectionErrors}
+      />
       <ChannelCardList
         channels={channels}
         models={models}

@@ -1,4 +1,6 @@
-export function GlobalValidationSummary(props: { globalErrors: string[] }) {
+export function GlobalValidationSummary(props: { globalErrors: string[]; sectionErrors: string[] }) {
+  const summaryItems = [...props.sectionErrors, ...props.globalErrors];
+
   return (
     <section className="panel">
       <h2>Global Rules</h2>
@@ -12,11 +14,11 @@ export function GlobalValidationSummary(props: { globalErrors: string[] }) {
       </ul>
 
       <h3>Validation Summary</h3>
-      {props.globalErrors.length === 0 ? (
+      {summaryItems.length === 0 ? (
         <p>No blocking issues.</p>
       ) : (
         <ul className="error-list">
-          {props.globalErrors.map((error, index) => (
+          {summaryItems.map((error, index) => (
             <li key={`${index}-${error}`}>{error}</li>
           ))}
         </ul>

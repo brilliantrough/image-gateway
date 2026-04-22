@@ -26,6 +26,32 @@ export function ChannelCard(props: {
       </label>
 
       <label>
+        Base URL
+        <input
+          value={props.channel.baseUrl}
+          onChange={(event) => props.onChange({ ...props.channel, baseUrl: event.target.value })}
+        />
+      </label>
+
+      <label>
+        API Key
+        <input
+          type="password"
+          value={props.channel.apiKey}
+          onChange={(event) => props.onChange({ ...props.channel, apiKey: event.target.value })}
+        />
+      </label>
+
+      <label className="channel-card__toggle">
+        <input
+          type="checkbox"
+          checked={props.channel.enabled}
+          onChange={(event) => props.onChange({ ...props.channel, enabled: event.target.checked })}
+        />
+        Enabled
+      </label>
+
+      <label>
         Protocol
         <select
           aria-label="Protocol"

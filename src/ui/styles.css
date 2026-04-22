@@ -113,6 +113,11 @@ textarea {
   margin-top: 14px;
 }
 
+.channel-card__toggle {
+  flex-direction: row !important;
+  align-items: center;
+}
+
 .channel-card input,
 .channel-card select {
   border: 1px solid var(--line);

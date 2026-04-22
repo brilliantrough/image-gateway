@@ -16,7 +16,7 @@ export function ChannelCardList(props: {
             key={channel.id}
             channel={channel}
             modelCount={props.models.filter((model) => model.channelId === channel.id).length}
-            errors={props.fieldErrors.filter((error) => error.includes(channel.id))}
+            errors={props.fieldErrors.filter((error) => error.startsWith(`Channel ${channel.id} `))}
             onChange={(next) => props.onChange(channel.id, next)}
           />
         ))}
