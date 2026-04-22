@@ -15,11 +15,11 @@ export const channelConfigSchema = z.object({
   name: z.string(),
   protocolType: protocolTypeSchema,
   protocolName: z.string().optional(),
-  baseUrl: z.string(),
+  baseUrl: z.string().url(),
   apiKey: z.string(),
   enabled: z.boolean(),
   description: z.string().optional(),
-});
+}).strict();
 
 export const modelConfigSchema = z.object({
   id: z.string().min(1),
@@ -29,19 +29,19 @@ export const modelConfigSchema = z.object({
   modelKind: z.literal("image-generation"),
   enabled: z.boolean(),
   description: z.string().optional(),
-});
+}).strict();
 
 export const modelPrioritySchema = z.object({
   modelId: z.string().min(1),
   priority: z.number().int().positive(),
-});
+}).strict();
 
 export const gatewayUpstreamConfigSchema = z.object({
   version: z.literal(1),
   channels: z.array(channelConfigSchema),
   models: z.array(modelConfigSchema),
   priorities: z.array(modelPrioritySchema),
-});
+}).strict();
 
 export type ProtocolType = z.infer<typeof protocolTypeSchema>;
 export type ChannelConfig = z.infer<typeof channelConfigSchema>;
@@ -49,7 +49,31 @@ export type ModelConfig = z.infer<typeof modelConfigSchema>;
 export type ModelPriority = z.infer<typeof modelPrioritySchema>;
 export type GatewayUpstreamConfig = z.infer<typeof gatewayUpstreamConfigSchema>;
 
+function findDuplicateId<T extends { id: string }>(items: T[]): string | null {
+  const ids = new Set<string>();
+
+  for (const item of items) {
+    if (ids.has(item.id)) {
+      return item.id;
+    }
+
+    ids.add(item.id);
+  }
+
+  return null;
+}
+
 export function validateUpstreamConfig(config: GatewayUpstreamConfig): GatewayUpstreamConfig {
+  const duplicateChannelId = findDuplicateId(config.channels);
+  if (duplicateChannelId) {
+    throw new Error(`Duplicate channel id ${duplicateChannelId}`);
+  }
+
+  const duplicateModelId = findDuplicateId(config.models);
+  if (duplicateModelId) {
+    throw new Error(`Duplicate model id ${duplicateModelId}`);
+  }
+
   const channelIds = new Set(config.channels.map((channel) => channel.id));
   const modelIds = new Set(config.models.map((model) => model.id));
   const priorityModelIds = new Set<string>();

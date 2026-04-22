@@ -6,7 +6,7 @@ const envSchema = z.object({
   LOG_LEVEL: z.string().default("info"),
   OPENAI_API_KEY: z.string().min(1),
   OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
-  UPSTREAM_CONFIG_PATH: z.string().min(1).optional(),
+  UPSTREAM_CONFIG_PATH: z.string().trim().min(1).optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

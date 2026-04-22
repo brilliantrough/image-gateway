@@ -92,4 +92,122 @@ describe("loadUpstreamConfigFile", () => {
 
     await expect(loadUpstreamConfigFile(configPath)).rejects.toThrow(/Duplicate priority 100/);
   });
+
+  it("rejects unknown top-level keys", async () => {
+    const configPath = await writeTempConfig({
+      version: 1,
+      channels: [],
+      models: [],
+      priorities: [],
+      unexpected: true,
+    });
+
+    await expect(loadUpstreamConfigFile(configPath)).rejects.toThrow(/unrecognized key/i);
+  });
+
+  it("rejects unknown nested keys", async () => {
+    const configPath = await writeTempConfig({
+      version: 1,
+      channels: [
+        {
+          id: "openai-main",
+          name: "OpenAI Main",
+          protocolType: "openai",
+          baseUrl: "https://api.openai.com/v1",
+          apiKey: "openai-key",
+          enabled: true,
+          timeoutMs: 30_000,
+        },
+      ],
+      models: [],
+      priorities: [],
+    });
+
+    await expect(loadUpstreamConfigFile(configPath)).rejects.toThrow(/unrecognized key/i);
+  });
+
+  it("rejects invalid channel baseUrl values", async () => {
+    const configPath = await writeTempConfig({
+      version: 1,
+      channels: [
+        {
+          id: "openai-main",
+          name: "OpenAI Main",
+          protocolType: "openai",
+          baseUrl: "not-a-url",
+          apiKey: "openai-key",
+          enabled: true,
+        },
+      ],
+      models: [],
+      priorities: [],
+    });
+
+    await expect(loadUpstreamConfigFile(configPath)).rejects.toThrow(/invalid url/i);
+  });
+
+  it("rejects duplicate channel ids", async () => {
+    const configPath = await writeTempConfig({
+      version: 1,
+      channels: [
+        {
+          id: "openai-main",
+          name: "OpenAI Main",
+          protocolType: "openai",
+          baseUrl: "https://api.openai.com/v1",
+          apiKey: "openai-key",
+          enabled: true,
+        },
+        {
+          id: "openai-main",
+          name: "OpenAI Backup",
+          protocolType: "openai",
+          baseUrl: "https://api.openai.com/v1",
+          apiKey: "openai-key-2",
+          enabled: true,
+        },
+      ],
+      models: [],
+      priorities: [],
+    });
+
+    await expect(loadUpstreamConfigFile(configPath)).rejects.toThrow("Duplicate channel id openai-main");
+  });
+
+  it("rejects duplicate model ids", async () => {
+    const configPath = await writeTempConfig({
+      version: 1,
+      channels: [
+        {
+          id: "openai-main",
+          name: "OpenAI Main",
+          protocolType: "openai",
+          baseUrl: "https://api.openai.com/v1",
+          apiKey: "openai-key",
+          enabled: true,
+        },
+      ],
+      models: [
+        {
+          id: "gpt-image-1",
+          displayName: "gpt-image-1",
+          providerModelName: "gpt-image-1",
+          channelId: "openai-main",
+          modelKind: "image-generation",
+          enabled: true,
+        },
+        {
+          id: "gpt-image-1",
+          displayName: "gpt-image-1 backup",
+          providerModelName: "gpt-image-1-backup",
+          channelId: "openai-main",
+          modelKind: "image-generation",
+          enabled: true,
+        },
+      ],
+      priorities: [],
+    });
+
+    await expect(loadUpstreamConfigFile(configPath)).rejects.toThrow("Duplicate model id gpt-image-1");
+  });
 });
