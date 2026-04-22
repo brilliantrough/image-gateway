@@ -184,7 +184,7 @@ textarea {
   margin-top: 0;
 }
 
-.provider-models__toggle {
+.provider-models__row .provider-models__toggle {
   display: flex;
   flex-direction: row;
   align-items: center;
