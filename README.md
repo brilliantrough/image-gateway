@@ -14,9 +14,19 @@ npm install
 cp .env.example .env
 ```
 
+`.env.example` is only a template. The server reads `process.env`; it does not automatically load `.env`.
+Export or source the values before running the app, for example:
+
+```bash
+set -a
+source .env
+set +a
+npm run dev
+```
+
 ### Legacy single OpenAI upstream mode
 
-Set `OPENAI_API_KEY` in `.env`, then run:
+Set `OPENAI_API_KEY` in your environment, then run:
 
 ```bash
 npm run dev
@@ -75,8 +85,11 @@ When `UPSTREAM_CONFIG_PATH` is set, the gateway routes requests with the configu
 - enabled models with the same `displayName` are routing candidates
 - disabled channels and disabled models are skipped
 - higher numeric priority wins
+- missing priority defaults to `0`
+- duplicate priorities for candidates with the same `displayName` are invalid at config load
 - the selected candidate's `providerModelName` is sent to the upstream provider
-- `openai`, `azure-openai`, `volcengine-ark`, and `custom` are handled by the OpenAI-compatible image adapter in this version
+- backend-supported protocol types are `openai`, `azure-openai`, `volcengine-ark`, and `custom`
+- the frontend/schema may expose `aliyun` and `tencent`, but the backend router returns `unsupported_protocol` for them until native adapters are added
 
 ## Volcengine Ark / 火山方舟
 
@@ -102,5 +115,5 @@ In config-router mode, the public `model` above is the configured `displayName`,
 
 ## Notes
 
-- `seed` and `negative_prompt` are accepted by the gateway protocol but rejected for provider `openai` in v1.
+- `seed` and `negative_prompt` are accepted by the gateway protocol but rejected by the OpenAI-compatible adapter path in v1.
 - `image`, `images`, and `mask` are part of the public contract and routed through the provider adapter when supported.
