@@ -1,3 +1,6 @@
+import fastifyStatic from "@fastify/static";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import Fastify from "fastify";
 import { ZodError } from "zod";
 import { isGatewayError, toGatewayErrorPayload } from "./lib/errors.js";
@@ -7,6 +10,19 @@ export function buildApp(options: {
   provider: { generateImage(request: unknown): Promise<unknown> };
 }) {
   const app = Fastify();
+  const builtUiRoot = path.resolve("dist/ui");
+  const sourceUiRoot = path.resolve("src/ui");
+  const uiRoot = existsSync(path.join(builtUiRoot, "index.html")) ? builtUiRoot : sourceUiRoot;
+
+  app.register(fastifyStatic, {
+    root: uiRoot,
+    index: false,
+    wildcard: false,
+  });
+
+  app.get("/", async (_, reply) => {
+    return reply.sendFile("index.html");
+  });
 
   registerImageRoutes(app, options.provider);
 
