@@ -8,6 +8,10 @@ export type ValidationResult = {
   canSave: boolean;
 };
 
+function channelFieldError(channelId: string, message: string): string {
+  return `[channel:${channelId}] ${message}`;
+}
+
 export function validateConfig(config: GatewayUpstreamConfig): ValidationResult {
   const fieldErrors: string[] = [];
   const sectionErrors: string[] = [];
@@ -34,22 +38,28 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
     const channelLabel = channelName || channel.id;
 
     if (!channelName) {
-      fieldErrors.push(`Channel ${channel.id} (${channelLabel}) is missing a name`);
+      fieldErrors.push(channelFieldError(channel.id, `Channel ${channelLabel} is missing a name`));
     }
 
     if (channel.enabled && !channel.baseUrl.trim()) {
-      fieldErrors.push(`Channel ${channel.id} (${channelLabel}) is missing a base URL`);
+      fieldErrors.push(
+        channelFieldError(channel.id, `Channel ${channelLabel} is missing a base URL`),
+      );
     }
 
     if (channel.enabled && !channel.apiKey.trim()) {
-      fieldErrors.push(`Channel ${channel.id} (${channelLabel}) is missing an API key`);
+      fieldErrors.push(
+        channelFieldError(channel.id, `Channel ${channelLabel} is missing an API key`),
+      );
     }
 
     if (channel.protocolType === "custom") {
       const name = channel.protocolName?.trim();
 
       if (!name) {
-        fieldErrors.push(`Channel ${channel.id} (${channelLabel}) requires a custom protocol name`);
+        fieldErrors.push(
+          channelFieldError(channel.id, `Channel ${channelLabel} requires a custom protocol name`),
+        );
       } else if (customProtocolNames.has(name)) {
         sectionErrors.push(`Duplicate custom protocol name ${name}`);
       } else {
@@ -113,7 +123,9 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
   }
 
   for (const group of buildResolvedGroups(config.channels, config.models, config.priorities)) {
-    if (group.items.length > 1 && group.items.some((item) => item.priority === undefined)) {
+    const activeItems = group.items.filter((item) => item.enabled);
+
+    if (activeItems.length > 1 && activeItems.some((item) => item.priority === undefined)) {
       globalErrors.push(`Display-name group ${group.displayName} has incomplete priority ordering`);
     }
   }
