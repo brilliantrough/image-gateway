@@ -86,7 +86,7 @@ When `UPSTREAM_CONFIG_PATH` is set, the gateway routes requests with the configu
 - disabled channels and disabled models are skipped
 - higher numeric priority wins
 - missing priority defaults to `0`
-- duplicate priorities for candidates with the same `displayName` are invalid at config load
+- duplicate priority numbers are invalid globally at config load
 - the selected candidate's `providerModelName` is sent to the upstream provider
 - backend-supported protocol types are `openai`, `azure-openai`, `volcengine-ark`, and `custom`
 - the frontend/schema may expose `aliyun` and `tencent`, but the backend router returns `unsupported_protocol` for them until native adapters are added
