@@ -17,7 +17,8 @@ export function buildResolvedGroups(
 
   for (const model of models) {
     const channel = channelById.get(model.channelId);
-    const items = groups.get(model.displayName) ?? [];
+    const displayName = model.displayName.trim();
+    const items = groups.get(displayName) ?? [];
 
     items.push({
       modelId: model.id,
@@ -31,7 +32,7 @@ export function buildResolvedGroups(
       priority: priorityByModelId.get(model.id),
     });
 
-    groups.set(model.displayName, items);
+    groups.set(displayName, items);
   }
 
   return Array.from(groups.entries())

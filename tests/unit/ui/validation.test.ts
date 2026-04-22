@@ -41,4 +41,43 @@ describe("validateConfig", () => {
 
     expect(result.globalErrors).toContainEqual(expect.stringContaining("Duplicate priority"));
   });
+
+  it("flags missing model references and duplicate model priority entries", () => {
+    const result = validateConfig({
+      version: 1,
+      channels: [
+        {
+          id: "c1",
+          name: "OpenAI Main",
+          protocolType: "openai",
+          baseUrl: "",
+          apiKey: "",
+          enabled: false,
+        },
+      ],
+      models: [
+        {
+          id: "m1",
+          displayName: "  gpt-image-1  ",
+          providerModelName: "gpt-image-1",
+          channelId: "c1",
+          modelKind: "image-generation",
+          enabled: true,
+        },
+      ],
+      priorities: [
+        { modelId: "m1", priority: 100 },
+        { modelId: "m1", priority: 90 },
+        { modelId: "missing-model", priority: 80 },
+      ],
+    });
+
+    expect(result.sectionErrors).toContainEqual(
+      expect.stringContaining("more than one priority entry"),
+    );
+    expect(result.sectionErrors).toContainEqual(
+      expect.stringContaining("Priority references missing model"),
+    );
+    expect(result.fieldErrors).toHaveLength(0);
+  });
 });

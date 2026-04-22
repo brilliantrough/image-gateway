@@ -13,21 +13,33 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
   const sectionErrors: string[] = [];
   const globalErrors: string[] = [];
 
+  const seenChannelIds = new Set<string>();
+  const seenModelIds = new Set<string>();
   const channelIds = new Set(config.channels.map((channel) => channel.id));
   const customProtocolNames = new Set<string>();
   const providerModelPairs = new Set<string>();
+  const modelIds = new Set(config.models.map((model) => model.id));
+  const priorityModelIds = new Set<string>();
   const priorityValues = new Set<number>();
 
   for (const channel of config.channels) {
-    if (!channel.name.trim()) {
+    const channelName = channel.name.trim();
+
+    if (seenChannelIds.has(channel.id)) {
+      sectionErrors.push(`Duplicate channel id ${channel.id}`);
+    } else {
+      seenChannelIds.add(channel.id);
+    }
+
+    if (!channelName) {
       fieldErrors.push(`Channel ${channel.id} is missing a name`);
     }
 
-    if (!channel.baseUrl.trim()) {
+    if (channel.enabled && !channel.baseUrl.trim()) {
       fieldErrors.push(`Channel ${channel.name || channel.id} is missing a base URL`);
     }
 
-    if (!channel.apiKey.trim()) {
+    if (channel.enabled && !channel.apiKey.trim()) {
       fieldErrors.push(`Channel ${channel.name || channel.id} is missing an API key`);
     }
 
@@ -45,14 +57,31 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
   }
 
   for (const model of config.models) {
-    if (!channelIds.has(model.channelId)) {
-      sectionErrors.push(`Model ${model.displayName || model.id} references a missing channel`);
+    const displayName = model.displayName.trim();
+    const providerModelName = model.providerModelName.trim();
+
+    if (seenModelIds.has(model.id)) {
+      sectionErrors.push(`Duplicate model id ${model.id}`);
+    } else {
+      seenModelIds.add(model.id);
     }
 
-    const providerPair = `${model.channelId}:${model.providerModelName}`;
+    if (!displayName) {
+      fieldErrors.push(`Model ${model.id} is missing a display name`);
+    }
+
+    if (!providerModelName) {
+      fieldErrors.push(`Model ${model.id} is missing a provider model name`);
+    }
+
+    if (!channelIds.has(model.channelId)) {
+      sectionErrors.push(`Model ${displayName || model.id} references a missing channel`);
+    }
+
+    const providerPair = `${model.channelId}:${providerModelName}`;
     if (providerModelPairs.has(providerPair)) {
       sectionErrors.push(
-        `Duplicate provider model mapping ${model.providerModelName} for channel ${model.channelId}`,
+        `Duplicate provider model mapping ${providerModelName} for channel ${model.channelId}`,
       );
     } else {
       providerModelPairs.add(providerPair);
@@ -60,6 +89,16 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
   }
 
   for (const priority of config.priorities) {
+    if (!modelIds.has(priority.modelId)) {
+      sectionErrors.push(`Priority references missing model ${priority.modelId}`);
+    }
+
+    if (priorityModelIds.has(priority.modelId)) {
+      sectionErrors.push(`Model ${priority.modelId} has more than one priority entry`);
+    } else {
+      priorityModelIds.add(priority.modelId);
+    }
+
     if (!Number.isInteger(priority.priority) || priority.priority <= 0) {
       fieldErrors.push(`Priority for model ${priority.modelId} must be a positive integer`);
     }

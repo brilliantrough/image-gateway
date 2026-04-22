@@ -25,7 +25,7 @@ describe("buildResolvedGroups", () => {
       [
         {
           id: "m1",
-          displayName: "gpt-image-1",
+          displayName: " gpt-image-1 ",
           providerModelName: "gpt-image-1",
           channelId: "c1",
           modelKind: "image-generation",
