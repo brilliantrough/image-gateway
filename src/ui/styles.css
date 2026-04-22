@@ -1,0 +1,90 @@
+:root {
+  color-scheme: light;
+  --bg: #f4efe8;
+  --panel: #fffdf9;
+  --line: #ddd0be;
+  --text: #2f271e;
+  --muted: #72624e;
+  --accent: #af5432;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Noto Sans SC", system-ui, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 248, 235, 0.95), transparent 35%),
+    linear-gradient(180deg, #f8f3ec 0%, var(--bg) 100%);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.page-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.page-shell h1 {
+  margin: 0 0 20px;
+  font-size: 2.1rem;
+}
+
+.action-bar,
+.panel {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(55, 35, 15, 0.08);
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.action-group button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #f1e1d3;
+  color: var(--text);
+}
+
+.action-group button:disabled {
+  opacity: 0.5;
+}
+
+.save-state {
+  align-self: center;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.panel {
+  padding: 20px;
+}
+
+.rule-list,
+.error-list {
+  margin: 0;
+  padding-left: 20px;
+}

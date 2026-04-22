@@ -1,7 +1,10 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../../../src/app.js";
+import { UpstreamConfigPage } from "../../../src/ui/app.js";
 
 describe("frontend static app", () => {
   const uiRoot = path.resolve("dist/ui");
@@ -30,5 +33,18 @@ describe("frontend static app", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toContain("Upstream Config Center");
+  });
+});
+
+describe("UpstreamConfigPage", () => {
+  it("renders action controls and routing rules", () => {
+    render(<UpstreamConfigPage />);
+
+    expect(screen.getByRole("button", { name: "Add Channel" })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /models with the same display name are selected by descending numeric priority/i,
+      ),
+    ).toBeInTheDocument();
   });
 });
