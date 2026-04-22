@@ -17,6 +17,31 @@ Fill `OPENAI_API_KEY` in `.env`.
 npm run dev
 ```
 
+## Frontend Config Center
+
+During development, run the backend and frontend in separate terminals:
+
+```bash
+npm run dev
+npm run dev:ui
+```
+
+The frontend page is a single-page config center for:
+
+- channel configuration
+- model registry
+- grouped priority ordering
+- JSON export preview
+
+For a production-style build and local server startup:
+
+```bash
+npm run build
+npm start
+```
+
+After build, the Fastify server serves the frontend shell at `/`.
+
 ## Example request
 
 ```bash
