@@ -145,7 +145,9 @@ describe("ConfiguredUpstreamRouter", () => {
 
     await expect(router.generateImage(createBaseRequest())).rejects.toMatchObject<GatewayError>({
       statusCode: 404,
+      type: "invalid_request",
       code: "model_not_configured",
+      param: "model",
     });
   });
 });

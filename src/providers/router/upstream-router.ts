@@ -39,9 +39,10 @@ export class ConfiguredUpstreamRouter implements ImageProvider {
     if (!candidate) {
       throw new GatewayError({
         statusCode: 404,
-        type: "not_found",
+        type: "invalid_request",
         code: "model_not_configured",
-        message: `Model '${request.model}' is not configured.`,
+        message: `No enabled upstream route is configured for model '${request.model}'.`,
+        param: "model",
       });
     }
 
