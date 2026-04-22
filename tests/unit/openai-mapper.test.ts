@@ -23,6 +23,38 @@ describe("toOpenAIRequest", () => {
     });
   });
 
+  it("does not allow extra_body.model to override the routed model", () => {
+    const result = toOpenAIRequest({
+      mode: "text-to-image",
+      model: "routed-model",
+      prompt: "orange cat",
+      size: "1024x1024",
+      n: 1,
+      response_format: "b64_json",
+      images: [],
+      extra_body: {
+        model: "attacker-model",
+      },
+    });
+
+    expect(result.model).toBe("routed-model");
+  });
+
+  it("forwards response_format", () => {
+    const result = toOpenAIRequest({
+      mode: "text-to-image",
+      model: "gpt-image-1",
+      prompt: "orange cat",
+      size: "1024x1024",
+      n: 1,
+      response_format: "url",
+      images: [],
+      extra_body: {},
+    });
+
+    expect(result.response_format).toBe("url");
+  });
+
   it("rejects unsupported seed parameter", () => {
     expect(() =>
       toOpenAIRequest({

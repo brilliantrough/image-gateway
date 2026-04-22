@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type OpenAI from "openai";
 import { GatewayError } from "../../lib/errors.js";
 import type { NormalizedImageRequest } from "../../types/image.js";
@@ -22,7 +23,7 @@ export class OpenAICompatibleImageProvider implements ImageProvider {
           url: "url" in item ? item.url ?? null : null,
           revised_prompt: "revised_prompt" in item ? item.revised_prompt ?? null : null,
         })),
-        request_id: crypto.randomUUID(),
+        request_id: randomUUID(),
         output_format: request.output_format,
       });
     } catch (error) {

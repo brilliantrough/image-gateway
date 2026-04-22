@@ -30,17 +30,18 @@ export function toOpenAIRequest(
   }
 
   const payload: OpenAIImagesRequest = {
+    ...request.extra_body,
     model: request.model,
     prompt: request.prompt,
     size: request.size,
     n: request.n,
+    response_format: request.response_format,
     quality: request.quality,
     style: request.style,
     background: request.background,
     output_format: request.output_format,
     output_compression: request.output_compression,
     user: request.user,
-    ...request.extra_body,
   };
 
   if (request.image) {
