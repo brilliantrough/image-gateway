@@ -5,6 +5,7 @@ export const PROTOCOL_OPTIONS: Array<{ value: ProtocolType; label: string }> = [
   { value: "azure-openai", label: "Azure OpenAI" },
   { value: "aliyun", label: "阿里云" },
   { value: "tencent", label: "腾讯云" },
+  { value: "volcengine-ark", label: "Volcengine Ark / 火山方舟" },
   { value: "custom", label: "Custom" },
 ];
 

@@ -53,6 +53,15 @@ describe("UpstreamConfigPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("offers Volcengine Ark as a provider protocol", async () => {
+    render(<UpstreamConfigPage />);
+
+    const protocolSelect = screen.getAllByLabelText("Protocol")[0] as HTMLSelectElement;
+    const optionLabels = Array.from(protocolSelect.options).map((option) => option.textContent);
+
+    expect(optionLabels).toContain("Volcengine Ark / 火山方舟");
+  });
+
   it("adds a channel and requires a custom protocol name", async () => {
     const user = userEvent.setup();
 

@@ -3,6 +3,7 @@ export type ProtocolType =
   | "azure-openai"
   | "aliyun"
   | "tencent"
+  | "volcengine-ark"
   | "custom";
 
 export type ChannelConfig = {
