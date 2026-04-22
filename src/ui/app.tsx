@@ -17,6 +17,7 @@ export function UpstreamConfigPage() {
         onValidate={() => {}}
         onSave={() => {}}
         onExport={() => {}}
+        disableAll
         disableSave={!validation.canSave}
       />
       <GlobalValidationSummary globalErrors={validation.globalErrors} />

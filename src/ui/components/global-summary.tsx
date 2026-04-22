@@ -16,8 +16,8 @@ export function GlobalValidationSummary(props: { globalErrors: string[] }) {
         <p>No blocking issues.</p>
       ) : (
         <ul className="error-list">
-          {props.globalErrors.map((error) => (
-            <li key={error}>{error}</li>
+          {props.globalErrors.map((error, index) => (
+            <li key={`${index}-${error}`}>{error}</li>
           ))}
         </ul>
       )}

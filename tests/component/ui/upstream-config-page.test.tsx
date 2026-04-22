@@ -8,21 +8,33 @@ import { UpstreamConfigPage } from "../../../src/ui/app.js";
 
 describe("frontend static app", () => {
   const uiRoot = path.resolve("dist/ui");
+  const indexPath = path.join(uiRoot, "index.html");
+  let previousIndexHtml: string | null = null;
   const provider = { generateImage: vi.fn() };
   const app = buildApp({ provider });
 
   beforeAll(async () => {
     await mkdir(uiRoot, { recursive: true });
-    await writeFile(
-      path.join(uiRoot, "index.html"),
-      "<!DOCTYPE html><html><body><div>Upstream Config Center</div></body></html>",
-    );
+    try {
+      previousIndexHtml = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(indexPath, "utf8"),
+      );
+    } catch {
+      previousIndexHtml = null;
+    }
+
+    await writeFile(indexPath, "<!DOCTYPE html><html><body><div>Upstream Config Center</div></body></html>");
     await app.ready();
   });
 
   afterAll(async () => {
     await app.close();
-    await rm(uiRoot, { recursive: true, force: true });
+    if (previousIndexHtml === null) {
+      await rm(indexPath, { force: true });
+      return;
+    }
+
+    await writeFile(indexPath, previousIndexHtml);
   });
 
   it("serves the frontend shell at /", async () => {
