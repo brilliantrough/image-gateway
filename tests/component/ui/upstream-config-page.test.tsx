@@ -64,6 +64,7 @@ describe("UpstreamConfigPage", () => {
     await user.selectOptions(protocolSelect!, "custom");
     await user.tab();
 
-    expect(screen.getByText(/requires a custom protocol name/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/requires a custom protocol name/i).length).toBeGreaterThan(0);
+    expect(screen.getByText("Validation failed")).toBeInTheDocument();
   });
 });

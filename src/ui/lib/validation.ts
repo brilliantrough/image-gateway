@@ -129,11 +129,20 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
     }
   }
 
+  const channelErrorCount = Object.values(channelFieldErrors).reduce(
+    (count, errors) => count + errors.length,
+    0,
+  );
+
   return {
     fieldErrors,
     channelFieldErrors,
     sectionErrors,
     globalErrors,
-    canSave: fieldErrors.length === 0 && sectionErrors.length === 0 && globalErrors.length === 0,
+    canSave:
+      fieldErrors.length === 0 &&
+      channelErrorCount === 0 &&
+      sectionErrors.length === 0 &&
+      globalErrors.length === 0,
   };
 }

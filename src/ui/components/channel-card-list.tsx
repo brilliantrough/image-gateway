@@ -7,6 +7,12 @@ export function ChannelCardList(props: {
   channelFieldErrors: Record<string, string[]>;
   onChange(channelId: string, next: ChannelConfig): void;
 }) {
+  const modelCountByChannelId = new Map<string, number>();
+
+  for (const model of props.models) {
+    modelCountByChannelId.set(model.channelId, (modelCountByChannelId.get(model.channelId) ?? 0) + 1);
+  }
+
   return (
     <section className="channel-list">
       <h2>Channel Configuration</h2>
@@ -15,7 +21,7 @@ export function ChannelCardList(props: {
           <ChannelCard
             key={channel.id}
             channel={channel}
-            modelCount={props.models.filter((model) => model.channelId === channel.id).length}
+            modelCount={modelCountByChannelId.get(channel.id) ?? 0}
             errors={props.channelFieldErrors[channel.id] ?? []}
             onChange={(next) => props.onChange(channel.id, next)}
           />

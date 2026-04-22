@@ -23,6 +23,7 @@ export function UpstreamConfigPage() {
   );
 
   const validation = validateConfig(config);
+  const channelErrorSummary = Object.values(validation.channelFieldErrors).flat();
 
   return (
     <main className="page-shell">
@@ -40,7 +41,7 @@ export function UpstreamConfigPage() {
         disableSave
       />
       <GlobalValidationSummary
-        fieldErrors={validation.fieldErrors}
+        fieldErrors={[...validation.fieldErrors, ...channelErrorSummary]}
         globalErrors={validation.globalErrors}
         sectionErrors={validation.sectionErrors}
       />
