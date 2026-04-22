@@ -1,5 +1,4 @@
 import fastifyStatic from "@fastify/static";
-import { existsSync } from "node:fs";
 import path from "node:path";
 import Fastify from "fastify";
 import { ZodError } from "zod";
@@ -10,9 +9,7 @@ export function buildApp(options: {
   provider: { generateImage(request: unknown): Promise<unknown> };
 }) {
   const app = Fastify();
-  const builtUiRoot = path.resolve("dist/ui");
-  const sourceUiRoot = path.resolve("src/ui");
-  const uiRoot = existsSync(path.join(builtUiRoot, "index.html")) ? builtUiRoot : sourceUiRoot;
+  const uiRoot = path.resolve("dist/ui");
 
   app.register(fastifyStatic, {
     root: uiRoot,
