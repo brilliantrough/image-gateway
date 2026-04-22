@@ -4,6 +4,7 @@ import { ChannelCardList } from "./components/channel-card-list.js";
 import { GlobalValidationSummary } from "./components/global-summary.js";
 import { ModelRegistryTable } from "./components/model-registry-table.js";
 import { PriorityGroupList } from "./components/priority-group-list.js";
+import type { ModelConfig } from "./types/config.js";
 import {
   createEmptyChannelConfig,
   createEmptyModelConfig,
@@ -20,6 +21,12 @@ export function UpstreamConfigPage() {
   const [models, setModels] = useState(initialConfig.models);
   const [priorities, setPriorities] = useState(initialConfig.priorities);
   const [exportPreview, setExportPreview] = useState("");
+
+  const updateModel = (modelId: string, updater: Partial<ModelConfig>) => {
+    setModels((current) =>
+      current.map((model) => (model.id === modelId ? { ...model, ...updater } : model)),
+    );
+  };
 
   const addModelToChannel = (channelId: string, modelName: string) => {
     const nextModelName = modelName.trim();
@@ -81,26 +88,14 @@ export function UpstreamConfigPage() {
         models={models}
         channelFieldErrors={validation.channelFieldErrors}
         onAddModel={addModelToChannel}
-        onModelChange={(modelId, updater) =>
-          setModels((current) =>
-            current.map((model) => (model.id === modelId ? { ...model, ...updater } : model)),
-          )
-        }
+        onModelChange={updateModel}
         onChange={(channelId, next) =>
           setChannels((current) =>
             current.map((channel) => (channel.id === channelId ? next : channel)),
           )
         }
       />
-      <ModelRegistryTable
-        models={models}
-        channels={channels}
-        onChange={(modelId, updater) =>
-          setModels((current) =>
-            current.map((model) => (model.id === modelId ? { ...model, ...updater } : model)),
-          )
-        }
-      />
+      <ModelRegistryTable models={models} channels={channels} onChange={updateModel} />
       <PriorityGroupList
         groups={resolvedGroups}
         onPriorityChange={(modelId, priority) =>

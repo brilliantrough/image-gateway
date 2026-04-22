@@ -128,7 +128,7 @@ export function ChannelCard(props: {
           {props.models.map((model) => (
             <div key={model.id} className="provider-models__row">
               <label>
-                Card Display
+                Provider Card Display Name
                 <input
                   aria-label="Provider Card Display Name"
                   value={model.displayName}
@@ -138,7 +138,7 @@ export function ChannelCard(props: {
                 />
               </label>
               <label>
-                Card Provider Model
+                Provider Card Model Name
                 <input
                   aria-label="Provider Card Model Name"
                   value={model.providerModelName}
@@ -156,7 +156,7 @@ export function ChannelCard(props: {
                     props.onModelChange(model.id, { enabled: event.target.checked })
                   }
                 />
-                Enabled
+                Provider Card Model Enabled
               </label>
             </div>
           ))}

@@ -180,7 +180,15 @@ textarea {
   background: #fcf7f0;
 }
 
+.provider-models__row label {
+  margin-top: 0;
+}
+
 .provider-models__toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   align-self: center;
   white-space: nowrap;
 }

@@ -10,9 +10,17 @@ export function ChannelCardList(props: {
   onModelChange(modelId: string, updater: Partial<ModelConfig>): void;
 }) {
   const modelCountByChannelId = new Map<string, number>();
+  const modelsByChannelId = new Map<string, ModelConfig[]>();
 
   for (const model of props.models) {
     modelCountByChannelId.set(model.channelId, (modelCountByChannelId.get(model.channelId) ?? 0) + 1);
+    const channelModels = modelsByChannelId.get(model.channelId);
+    if (channelModels) {
+      channelModels.push(model);
+      continue;
+    }
+
+    modelsByChannelId.set(model.channelId, [model]);
   }
 
   return (
@@ -24,7 +32,7 @@ export function ChannelCardList(props: {
             key={channel.id}
             channel={channel}
             modelCount={modelCountByChannelId.get(channel.id) ?? 0}
-            models={props.models.filter((model) => model.channelId === channel.id)}
+            models={modelsByChannelId.get(channel.id) ?? []}
             errors={props.channelFieldErrors[channel.id] ?? []}
             onChange={(next) => props.onChange(channel.id, next)}
             onAddModel={(modelName) => props.onAddModel(channel.id, modelName)}

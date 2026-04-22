@@ -109,8 +109,13 @@ describe("UpstreamConfigPage", () => {
 
     render(<UpstreamConfigPage />);
 
+    await user.click(screen.getByRole("button", { name: "Add Channel" }));
+    const channelNameInputs = screen.getAllByLabelText("Channel Name");
+    await user.clear(channelNameInputs.at(-1)!);
+    await user.type(channelNameInputs.at(-1)!, "Provider Scoped Test");
+
     const quickAddInputs = screen.getAllByLabelText("Quick Add Provider Model");
-    await user.type(quickAddInputs[0]!, "doubao-seedream-4-0{enter}");
+    await user.type(quickAddInputs.at(-1)!, "doubao-seedream-4-0{enter}");
 
     const displayNameInputs = screen.getAllByLabelText("Display Name");
     const modelChannels = screen.getAllByLabelText("Model Channel");
@@ -118,8 +123,8 @@ describe("UpstreamConfigPage", () => {
     const newModelChannel = modelChannels.at(-1) as HTMLSelectElement;
 
     expect(displayNameInputs.at(-1)).toHaveValue("doubao-seedream-4-0");
-    expect(newModelChannel.selectedOptions[0]?.textContent).toBe("OpenAI Main");
-    expect(priorityRows[0]).toHaveTextContent("OpenAI Main");
+    expect(newModelChannel.selectedOptions[0]?.textContent).toBe("Provider Scoped Test");
+    expect(priorityRows[0]).toHaveTextContent("Provider Scoped Test");
   });
 
   it("reorders a duplicate display-name group by descending priority", async () => {
