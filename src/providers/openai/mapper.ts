@@ -18,6 +18,8 @@ const RESERVED_EXTRA_BODY_FIELDS = new Set([
   "image",
   "images",
   "mask",
+  "seed",
+  "negative_prompt",
 ]);
 
 export function toOpenAIRequest(

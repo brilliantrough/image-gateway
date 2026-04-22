@@ -52,9 +52,9 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
       pushChannelFieldError(channel.id, `Channel ${channelLabel} is missing a name`);
     }
 
-    if (channel.enabled && !channel.baseUrl.trim()) {
+    if (!channel.baseUrl.trim()) {
       pushChannelFieldError(channel.id, `Channel ${channelLabel} is missing a base URL`);
-    } else if (channel.enabled && !isValidUrl(channel.baseUrl.trim())) {
+    } else if (!isValidUrl(channel.baseUrl)) {
       pushChannelFieldError(channel.id, `Channel ${channelLabel} has an invalid base URL`);
     }
 

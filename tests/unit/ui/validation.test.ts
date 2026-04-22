@@ -103,4 +103,27 @@ describe("validateConfig", () => {
     );
     expect(result.canSave).toBe(false);
   });
+
+  it("flags invalid disabled channel base urls", () => {
+    const result = validateConfig({
+      version: 1,
+      channels: [
+        {
+          id: "c1",
+          name: "Disabled Broken Channel",
+          protocolType: "openai",
+          baseUrl: "not-a-url",
+          apiKey: "",
+          enabled: false,
+        },
+      ],
+      models: [],
+      priorities: [],
+    });
+
+    expect(result.channelFieldErrors.c1).toContain(
+      "Channel Disabled Broken Channel has an invalid base URL",
+    );
+    expect(result.canSave).toBe(false);
+  });
 });

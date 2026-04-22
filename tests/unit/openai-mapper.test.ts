@@ -73,6 +73,22 @@ describe("toOpenAIRequest", () => {
     expect(result.mask).toBeUndefined();
   });
 
+  it("ignores seed and negative_prompt in extra_body", () => {
+    const result = toOpenAIRequest({
+      mode: "text-to-image",
+      model: "gpt-image-1",
+      prompt: "orange cat",
+      images: [],
+      extra_body: {
+        seed: 123,
+        negative_prompt: "bad",
+      },
+    });
+
+    expect(result.seed).toBeUndefined();
+    expect(result.negative_prompt).toBeUndefined();
+  });
+
   it("rejects unsupported seed parameter", () => {
     expect(() =>
       toOpenAIRequest({
