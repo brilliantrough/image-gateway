@@ -157,3 +157,77 @@ textarea {
   padding: 8px 10px;
   background: #fff;
 }
+
+.priority-group-list,
+.export-preview {
+  margin-top: 24px;
+}
+
+.priority-group-list__grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.priority-group-card {
+  padding-bottom: 8px;
+}
+
+.priority-group-card h3 {
+  margin-top: 0;
+}
+
+.priority-group-card__rows {
+  display: grid;
+  gap: 12px;
+}
+
+.priority-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) 160px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.priority-row p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.priority-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.priority-row input,
+.export-preview textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.export-preview label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.export-preview textarea {
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+}
+
+@media (max-width: 768px) {
+  .action-bar {
+    flex-direction: column;
+  }
+
+  .priority-row {
+    grid-template-columns: 1fr;
+  }
+}

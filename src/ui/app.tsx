@@ -3,7 +3,14 @@ import { ActionBar } from "./components/action-bar.js";
 import { ChannelCardList } from "./components/channel-card-list.js";
 import { GlobalValidationSummary } from "./components/global-summary.js";
 import { ModelRegistryTable } from "./components/model-registry-table.js";
-import { createEmptyChannelConfig, createEmptyModelConfig } from "./lib/config-helpers.js";
+import { PriorityGroupList } from "./components/priority-group-list.js";
+import {
+  createEmptyChannelConfig,
+  createEmptyModelConfig,
+  exportConfig,
+  upsertPriority,
+} from "./lib/config-helpers.js";
+import { buildResolvedGroups } from "./lib/resolved-groups.js";
 import { validateConfig } from "./lib/validation.js";
 import { initialConfig } from "./test-data/initial-config.js";
 import "./styles.css";
@@ -11,7 +18,8 @@ import "./styles.css";
 export function UpstreamConfigPage() {
   const [channels, setChannels] = useState(initialConfig.channels);
   const [models, setModels] = useState(initialConfig.models);
-  const [priorities] = useState(initialConfig.priorities);
+  const [priorities, setPriorities] = useState(initialConfig.priorities);
+  const [exportPreview, setExportPreview] = useState("");
 
   const config = useMemo(
     () => ({
@@ -25,6 +33,7 @@ export function UpstreamConfigPage() {
 
   const validation = validateConfig(config);
   const channelErrorSummary = Object.values(validation.channelFieldErrors).flat();
+  const resolvedGroups = buildResolvedGroups(channels, models, priorities);
 
   return (
     <main className="page-shell">
@@ -40,10 +49,10 @@ export function UpstreamConfigPage() {
         }
         onValidate={() => {}}
         onSave={() => {}}
-        onExport={() => {}}
+        onExport={() => setExportPreview(exportConfig(config))}
         disableAddModel={channels.length === 0}
         disableValidate
-        disableExport
+        disableExport={!validation.canSave}
         disableSave
       />
       <GlobalValidationSummary
@@ -70,6 +79,21 @@ export function UpstreamConfigPage() {
           )
         }
       />
+      <PriorityGroupList
+        groups={resolvedGroups}
+        onPriorityChange={(modelId, priority) =>
+          setPriorities((current) => upsertPriority(current, modelId, priority))
+        }
+      />
+      {exportPreview ? (
+        <section className="panel export-preview">
+          <h2>Export Preview</h2>
+          <label>
+            Export JSON Preview
+            <textarea aria-label="Export JSON Preview" readOnly value={exportPreview} />
+          </label>
+        </section>
+      ) : null}
     </main>
   );
 }

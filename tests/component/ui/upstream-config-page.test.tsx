@@ -1,7 +1,7 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -91,5 +91,23 @@ describe("UpstreamConfigPage", () => {
     expect(modelChannelsAfter).toHaveLength(modelChannelsBefore.length + 1);
     expect(newModelChannel.value).not.toBe("");
     expect(newModelChannel.selectedOptions[0]?.textContent).toBe("Stability Proxy");
+  });
+
+  it("reorders a duplicate display-name group by descending priority", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    const priorityInputs = screen.getAllByLabelText("Priority");
+    await user.clear(priorityInputs[0]!);
+    await user.type(priorityInputs[0]!, "1000");
+    await user.clear(priorityInputs[1]!);
+    await user.type(priorityInputs[1]!, "100");
+
+    const rows = screen.getAllByTestId("priority-row-gpt-image-1");
+    expect(rows[0]).toHaveTextContent("OpenAI Main");
+    expect(within(rows[0]!).getByLabelText("Priority")).toHaveValue(1000);
+    expect(rows[1]).toHaveTextContent("Azure Backup");
+    expect(within(rows[1]!).getByLabelText("Priority")).toHaveValue(100);
   });
 });
