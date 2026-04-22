@@ -1,12 +1,28 @@
-import type { ChannelConfig, ProtocolType } from "../types/config.js";
+import { useState } from "react";
+import type { ChannelConfig, ModelConfig, ProtocolType } from "../types/config.js";
 import { PROTOCOL_OPTIONS } from "../lib/protocol-options.js";
 
 export function ChannelCard(props: {
   channel: ChannelConfig;
   onChange(next: ChannelConfig): void;
   modelCount: number;
+  models: ModelConfig[];
+  onAddModel(modelName: string): void;
+  onModelChange(modelId: string, updater: Partial<ModelConfig>): void;
   errors: string[];
 }) {
+  const [quickAddModelName, setQuickAddModelName] = useState("");
+
+  const commitQuickAdd = () => {
+    const nextModelName = quickAddModelName.trim();
+    if (!nextModelName) {
+      return;
+    }
+
+    props.onAddModel(nextModelName);
+    setQuickAddModelName("");
+  };
+
   return (
     <article className="panel channel-card">
       <header className="channel-card__header">
@@ -82,6 +98,70 @@ export function ChannelCard(props: {
           />
         </label>
       ) : null}
+
+      <section className="provider-models">
+        <div className="provider-models__header">
+          <h4>Provider Models</h4>
+          <p>Quick-add and edit models scoped to this provider.</p>
+        </div>
+
+        <div className="provider-models__quick-add">
+          <input
+            aria-label="Quick Add Provider Model"
+            value={quickAddModelName}
+            onChange={(event) => setQuickAddModelName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") {
+                return;
+              }
+
+              event.preventDefault();
+              commitQuickAdd();
+            }}
+          />
+          <button type="button" onClick={commitQuickAdd}>
+            Add
+          </button>
+        </div>
+
+        <div className="provider-models__list">
+          {props.models.map((model) => (
+            <div key={model.id} className="provider-models__row">
+              <label>
+                Card Display
+                <input
+                  aria-label="Provider Card Display Name"
+                  value={model.displayName}
+                  onChange={(event) =>
+                    props.onModelChange(model.id, { displayName: event.target.value })
+                  }
+                />
+              </label>
+              <label>
+                Card Provider Model
+                <input
+                  aria-label="Provider Card Model Name"
+                  value={model.providerModelName}
+                  onChange={(event) =>
+                    props.onModelChange(model.id, { providerModelName: event.target.value })
+                  }
+                />
+              </label>
+              <label className="provider-models__toggle">
+                <input
+                  aria-label="Provider Card Model Enabled"
+                  type="checkbox"
+                  checked={model.enabled}
+                  onChange={(event) =>
+                    props.onModelChange(model.id, { enabled: event.target.checked })
+                  }
+                />
+                Enabled
+              </label>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {props.errors.map((error, index) => (
         <p key={`${index}-${error}`} className="field-error">

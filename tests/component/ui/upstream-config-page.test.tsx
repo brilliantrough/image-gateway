@@ -104,6 +104,24 @@ describe("UpstreamConfigPage", () => {
     expect(newModelChannel.selectedOptions[0]?.textContent).toBe("Stability Proxy");
   });
 
+  it("adds a model directly inside a provider card", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    const quickAddInputs = screen.getAllByLabelText("Quick Add Provider Model");
+    await user.type(quickAddInputs[0]!, "doubao-seedream-4-0{enter}");
+
+    const displayNameInputs = screen.getAllByLabelText("Display Name");
+    const modelChannels = screen.getAllByLabelText("Model Channel");
+    const priorityRows = screen.getAllByTestId("priority-row-doubao-seedream-4-0");
+    const newModelChannel = modelChannels.at(-1) as HTMLSelectElement;
+
+    expect(displayNameInputs.at(-1)).toHaveValue("doubao-seedream-4-0");
+    expect(newModelChannel.selectedOptions[0]?.textContent).toBe("OpenAI Main");
+    expect(priorityRows[0]).toHaveTextContent("OpenAI Main");
+  });
+
   it("reorders a duplicate display-name group by descending priority", async () => {
     const user = userEvent.setup();
 

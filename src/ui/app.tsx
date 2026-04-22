@@ -21,6 +21,22 @@ export function UpstreamConfigPage() {
   const [priorities, setPriorities] = useState(initialConfig.priorities);
   const [exportPreview, setExportPreview] = useState("");
 
+  const addModelToChannel = (channelId: string, modelName: string) => {
+    const nextModelName = modelName.trim();
+    if (!nextModelName) {
+      return;
+    }
+
+    setModels((current) => [
+      ...current,
+      {
+        ...createEmptyModelConfig(channelId),
+        displayName: nextModelName,
+        providerModelName: nextModelName,
+      },
+    ]);
+  };
+
   const config = useMemo(
     () => ({
       version: 1 as const,
@@ -64,6 +80,12 @@ export function UpstreamConfigPage() {
         channels={channels}
         models={models}
         channelFieldErrors={validation.channelFieldErrors}
+        onAddModel={addModelToChannel}
+        onModelChange={(modelId, updater) =>
+          setModels((current) =>
+            current.map((model) => (model.id === modelId ? { ...model, ...updater } : model)),
+          )
+        }
         onChange={(channelId, next) =>
           setChannels((current) =>
             current.map((channel) => (channel.id === channelId ? next : channel)),
