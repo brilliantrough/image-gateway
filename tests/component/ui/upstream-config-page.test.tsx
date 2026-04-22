@@ -1,4 +1,5 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
@@ -12,34 +13,21 @@ afterEach(() => {
 });
 
 describe("frontend static app", () => {
-  const uiRoot = path.resolve("dist/ui");
-  const indexPath = path.join(uiRoot, "index.html");
-  let previousIndexHtml: string | null = null;
   const provider = { generateImage: vi.fn() };
-  const app = buildApp({ provider });
+  let uiRoot = "";
+  let app = buildApp({ provider, uiRoot: path.resolve("dist/ui") });
 
   beforeAll(async () => {
-    await mkdir(uiRoot, { recursive: true });
-    try {
-      previousIndexHtml = await import("node:fs/promises").then(({ readFile }) =>
-        readFile(indexPath, "utf8"),
-      );
-    } catch {
-      previousIndexHtml = null;
-    }
-
+    uiRoot = await mkdtemp(path.join(os.tmpdir(), "image-gateway-ui-"));
+    const indexPath = path.join(uiRoot, "index.html");
+    app = buildApp({ provider, uiRoot });
     await writeFile(indexPath, "<!DOCTYPE html><html><body><div>Upstream Config Center</div></body></html>");
     await app.ready();
   });
 
   afterAll(async () => {
     await app.close();
-    if (previousIndexHtml === null) {
-      await rm(indexPath, { force: true });
-      return;
-    }
-
-    await writeFile(indexPath, previousIndexHtml);
+    await rm(uiRoot, { recursive: true, force: true });
   });
 
   it("serves the frontend shell at /", async () => {

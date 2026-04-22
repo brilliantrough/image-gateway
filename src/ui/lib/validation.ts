@@ -3,19 +3,22 @@ import { buildResolvedGroups } from "./resolved-groups.js";
 
 export type ValidationResult = {
   fieldErrors: string[];
+  channelFieldErrors: Record<string, string[]>;
   sectionErrors: string[];
   globalErrors: string[];
   canSave: boolean;
 };
 
-function channelFieldError(channelId: string, message: string): string {
-  return `[channel:${channelId}] ${message}`;
-}
-
 export function validateConfig(config: GatewayUpstreamConfig): ValidationResult {
   const fieldErrors: string[] = [];
+  const channelFieldErrors: Record<string, string[]> = {};
   const sectionErrors: string[] = [];
   const globalErrors: string[] = [];
+
+  const pushChannelFieldError = (channelId: string, message: string) => {
+    channelFieldErrors[channelId] ??= [];
+    channelFieldErrors[channelId].push(message);
+  };
 
   const seenChannelIds = new Set<string>();
   const seenModelIds = new Set<string>();
@@ -38,28 +41,22 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
     const channelLabel = channelName || channel.id;
 
     if (!channelName) {
-      fieldErrors.push(channelFieldError(channel.id, `Channel ${channelLabel} is missing a name`));
+      pushChannelFieldError(channel.id, `Channel ${channelLabel} is missing a name`);
     }
 
     if (channel.enabled && !channel.baseUrl.trim()) {
-      fieldErrors.push(
-        channelFieldError(channel.id, `Channel ${channelLabel} is missing a base URL`),
-      );
+      pushChannelFieldError(channel.id, `Channel ${channelLabel} is missing a base URL`);
     }
 
     if (channel.enabled && !channel.apiKey.trim()) {
-      fieldErrors.push(
-        channelFieldError(channel.id, `Channel ${channelLabel} is missing an API key`),
-      );
+      pushChannelFieldError(channel.id, `Channel ${channelLabel} is missing an API key`);
     }
 
     if (channel.protocolType === "custom") {
       const name = channel.protocolName?.trim();
 
       if (!name) {
-        fieldErrors.push(
-          channelFieldError(channel.id, `Channel ${channelLabel} requires a custom protocol name`),
-        );
+        pushChannelFieldError(channel.id, `Channel ${channelLabel} requires a custom protocol name`);
       } else if (customProtocolNames.has(name)) {
         sectionErrors.push(`Duplicate custom protocol name ${name}`);
       } else {
@@ -90,13 +87,15 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
       sectionErrors.push(`Model ${displayName || model.id} references a missing channel`);
     }
 
-    const providerPair = `${model.channelId}:${providerModelName}`;
-    if (providerModelPairs.has(providerPair)) {
-      sectionErrors.push(
-        `Duplicate provider model mapping ${providerModelName} for channel ${model.channelId}`,
-      );
-    } else {
-      providerModelPairs.add(providerPair);
+    if (providerModelName) {
+      const providerPair = `${model.channelId}:${providerModelName}`;
+      if (providerModelPairs.has(providerPair)) {
+        sectionErrors.push(
+          `Duplicate provider model mapping ${providerModelName} for channel ${model.channelId}`,
+        );
+      } else {
+        providerModelPairs.add(providerPair);
+      }
     }
   }
 
@@ -132,6 +131,7 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
 
   return {
     fieldErrors,
+    channelFieldErrors,
     sectionErrors,
     globalErrors,
     canSave: fieldErrors.length === 0 && sectionErrors.length === 0 && globalErrors.length === 0,

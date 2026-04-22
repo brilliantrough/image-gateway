@@ -40,13 +40,14 @@ export function UpstreamConfigPage() {
         disableSave
       />
       <GlobalValidationSummary
+        fieldErrors={validation.fieldErrors}
         globalErrors={validation.globalErrors}
         sectionErrors={validation.sectionErrors}
       />
       <ChannelCardList
         channels={channels}
         models={models}
-        fieldErrors={validation.fieldErrors}
+        channelFieldErrors={validation.channelFieldErrors}
         onChange={(channelId, next) =>
           setChannels((current) =>
             current.map((channel) => (channel.id === channelId ? next : channel)),

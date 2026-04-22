@@ -7,9 +7,10 @@ import { registerImageRoutes } from "./routes/images.js";
 
 export function buildApp(options: {
   provider: { generateImage(request: unknown): Promise<unknown> };
+  uiRoot?: string;
 }) {
   const app = Fastify();
-  const uiRoot = path.resolve("dist/ui");
+  const uiRoot = options.uiRoot ?? path.resolve("dist/ui");
 
   app.register(fastifyStatic, {
     root: uiRoot,

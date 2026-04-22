@@ -4,7 +4,7 @@ import { ChannelCard } from "./channel-card.js";
 export function ChannelCardList(props: {
   channels: ChannelConfig[];
   models: ModelConfig[];
-  fieldErrors: string[];
+  channelFieldErrors: Record<string, string[]>;
   onChange(channelId: string, next: ChannelConfig): void;
 }) {
   return (
@@ -16,9 +16,7 @@ export function ChannelCardList(props: {
             key={channel.id}
             channel={channel}
             modelCount={props.models.filter((model) => model.channelId === channel.id).length}
-            errors={props.fieldErrors
-              .filter((error) => error.startsWith(`[channel:${channel.id}] `))
-              .map((error) => error.replace(`[channel:${channel.id}] `, ""))}
+            errors={props.channelFieldErrors[channel.id] ?? []}
             onChange={(next) => props.onChange(channel.id, next)}
           />
         ))}

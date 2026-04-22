@@ -1,5 +1,9 @@
-export function GlobalValidationSummary(props: { globalErrors: string[]; sectionErrors: string[] }) {
-  const summaryItems = [...props.sectionErrors, ...props.globalErrors];
+export function GlobalValidationSummary(props: {
+  fieldErrors: string[];
+  globalErrors: string[];
+  sectionErrors: string[];
+}) {
+  const summaryItems = [...props.fieldErrors, ...props.sectionErrors, ...props.globalErrors];
 
   return (
     <section className="panel">
