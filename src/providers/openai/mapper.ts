@@ -3,6 +3,23 @@ import type { NormalizedImageRequest, NormalizedImageResponse } from "../../type
 
 export type OpenAIImagesRequest = Record<string, unknown>;
 
+const RESERVED_EXTRA_BODY_FIELDS = new Set([
+  "model",
+  "prompt",
+  "size",
+  "n",
+  "response_format",
+  "quality",
+  "style",
+  "background",
+  "output_format",
+  "output_compression",
+  "user",
+  "image",
+  "images",
+  "mask",
+]);
+
 export function toOpenAIRequest(
   request: NormalizedImageRequest,
   providerName = "openai",
@@ -29,8 +46,12 @@ export function toOpenAIRequest(
     });
   }
 
+  const extraBody = Object.fromEntries(
+    Object.entries(request.extra_body).filter(([key]) => !RESERVED_EXTRA_BODY_FIELDS.has(key)),
+  );
+
   const payload: OpenAIImagesRequest = {
-    ...request.extra_body,
+    ...extraBody,
     model: request.model,
     prompt: request.prompt,
     size: request.size,

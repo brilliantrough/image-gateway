@@ -55,6 +55,24 @@ describe("toOpenAIRequest", () => {
     expect(result.response_format).toBe("url");
   });
 
+  it("ignores reserved extra_body image fields", () => {
+    const result = toOpenAIRequest({
+      mode: "text-to-image",
+      model: "gpt-image-1",
+      prompt: "orange cat",
+      images: [],
+      extra_body: {
+        image: "bypass-image",
+        images: ["bypass-images"],
+        mask: "bypass-mask",
+      },
+    });
+
+    expect(result.image).toBeUndefined();
+    expect(result.images).toBeUndefined();
+    expect(result.mask).toBeUndefined();
+  });
+
   it("rejects unsupported seed parameter", () => {
     expect(() =>
       toOpenAIRequest({

@@ -28,6 +28,14 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
   const modelIds = new Set(config.models.map((model) => model.id));
   const priorityModelIds = new Set<string>();
   const priorityValues = new Set<number>();
+  const isValidUrl = (value: string) => {
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   for (const channel of config.channels) {
     const channelName = channel.name.trim();
@@ -46,6 +54,8 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
 
     if (channel.enabled && !channel.baseUrl.trim()) {
       pushChannelFieldError(channel.id, `Channel ${channelLabel} is missing a base URL`);
+    } else if (channel.enabled && !isValidUrl(channel.baseUrl.trim())) {
+      pushChannelFieldError(channel.id, `Channel ${channelLabel} has an invalid base URL`);
     }
 
     if (channel.enabled && !channel.apiKey.trim()) {

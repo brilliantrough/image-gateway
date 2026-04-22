@@ -150,4 +150,26 @@ describe("ConfiguredUpstreamRouter", () => {
       param: "model",
     });
   });
+
+  it("matches trimmed display names", async () => {
+    const config = createConfig();
+    config.models = config.models.map((model) =>
+      model.id === "ark-gpt-image-1" ? { ...model, displayName: "  gpt-image-1  " } : model,
+    );
+
+    const provider: ImageProvider = {
+      generateImage: vi.fn().mockResolvedValue(createResponse()),
+    };
+    const providerFactory = vi.fn().mockReturnValue(provider);
+    const router = new ConfiguredUpstreamRouter(config, providerFactory);
+
+    await router.generateImage(createBaseRequest());
+
+    expect(providerFactory).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "ark-main", protocolType: "volcengine-ark" }),
+    );
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({ model: "doubao-seedream-4-0" }),
+    );
+  });
 });

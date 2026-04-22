@@ -55,8 +55,10 @@ export class ConfiguredUpstreamRouter implements ImageProvider {
   }
 
   private findCandidate(displayName: string): RoutedCandidate | undefined {
+    const normalizedDisplayName = displayName.trim();
+
     return this.config.models
-      .filter((model) => model.enabled && model.displayName === displayName)
+      .filter((model) => model.enabled && model.displayName.trim() === normalizedDisplayName)
       .map((model) => {
         const channel = this.channelById.get(model.channelId);
         if (!channel || !channel.enabled) {
