@@ -76,9 +76,20 @@ describe("UpstreamConfigPage", () => {
     await user.click(screen.getByRole("button", { name: "Add Channel" }));
     const channelNameInputs = screen.getAllByLabelText("Channel Name");
     await user.clear(channelNameInputs.at(-1)!);
-    await user.type(channelNameInputs.at(-1)!, "OpenAI Main");
+    await user.type(channelNameInputs.at(-1)!, "Stability Proxy");
+
+    const displayNamesBefore = screen.getAllByLabelText("Display Name");
+    const modelChannelsBefore = screen.getAllByLabelText("Model Channel");
+
     await user.click(screen.getByRole("button", { name: "Add Model" }));
 
-    expect(screen.getByRole("columnheader", { name: "Display Name" })).toBeInTheDocument();
+    const displayNamesAfter = screen.getAllByLabelText("Display Name");
+    const modelChannelsAfter = screen.getAllByLabelText("Model Channel");
+    const newModelChannel = modelChannelsAfter.at(-1) as HTMLSelectElement;
+
+    expect(displayNamesAfter).toHaveLength(displayNamesBefore.length + 1);
+    expect(modelChannelsAfter).toHaveLength(modelChannelsBefore.length + 1);
+    expect(newModelChannel.value).not.toBe("");
+    expect(newModelChannel.selectedOptions[0]?.textContent).toBe("Stability Proxy");
   });
 });
