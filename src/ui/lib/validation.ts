@@ -31,23 +31,25 @@ export function validateConfig(config: GatewayUpstreamConfig): ValidationResult 
       seenChannelIds.add(channel.id);
     }
 
+    const channelLabel = channelName || channel.id;
+
     if (!channelName) {
-      fieldErrors.push(`Channel ${channel.id} is missing a name`);
+      fieldErrors.push(`Channel ${channel.id} (${channelLabel}) is missing a name`);
     }
 
     if (channel.enabled && !channel.baseUrl.trim()) {
-      fieldErrors.push(`Channel ${channel.name || channel.id} is missing a base URL`);
+      fieldErrors.push(`Channel ${channel.id} (${channelLabel}) is missing a base URL`);
     }
 
     if (channel.enabled && !channel.apiKey.trim()) {
-      fieldErrors.push(`Channel ${channel.name || channel.id} is missing an API key`);
+      fieldErrors.push(`Channel ${channel.id} (${channelLabel}) is missing an API key`);
     }
 
     if (channel.protocolType === "custom") {
       const name = channel.protocolName?.trim();
 
       if (!name) {
-        fieldErrors.push(`Channel ${channel.name || channel.id} requires a custom protocol name`);
+        fieldErrors.push(`Channel ${channel.id} (${channelLabel}) requires a custom protocol name`);
       } else if (customProtocolNames.has(name)) {
         sectionErrors.push(`Duplicate custom protocol name ${name}`);
       } else {
