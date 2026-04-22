@@ -67,4 +67,18 @@ describe("UpstreamConfigPage", () => {
     expect(screen.getAllByText(/requires a custom protocol name/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Validation failed")).toBeInTheDocument();
   });
+
+  it("adds a model row tied to an existing channel", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    await user.click(screen.getByRole("button", { name: "Add Channel" }));
+    const channelNameInputs = screen.getAllByLabelText("Channel Name");
+    await user.clear(channelNameInputs.at(-1)!);
+    await user.type(channelNameInputs.at(-1)!, "OpenAI Main");
+    await user.click(screen.getByRole("button", { name: "Add Model" }));
+
+    expect(screen.getByRole("columnheader", { name: "Display Name" })).toBeInTheDocument();
+  });
 });

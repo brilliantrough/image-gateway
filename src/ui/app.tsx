@@ -2,14 +2,15 @@ import { useMemo, useState } from "react";
 import { ActionBar } from "./components/action-bar.js";
 import { ChannelCardList } from "./components/channel-card-list.js";
 import { GlobalValidationSummary } from "./components/global-summary.js";
-import { createEmptyChannelConfig } from "./lib/config-helpers.js";
+import { ModelRegistryTable } from "./components/model-registry-table.js";
+import { createEmptyChannelConfig, createEmptyModelConfig } from "./lib/config-helpers.js";
 import { validateConfig } from "./lib/validation.js";
 import { initialConfig } from "./test-data/initial-config.js";
 import "./styles.css";
 
 export function UpstreamConfigPage() {
   const [channels, setChannels] = useState(initialConfig.channels);
-  const [models] = useState(initialConfig.models);
+  const [models, setModels] = useState(initialConfig.models);
   const [priorities] = useState(initialConfig.priorities);
 
   const config = useMemo(
@@ -31,11 +32,16 @@ export function UpstreamConfigPage() {
       <ActionBar
         saveState={validation.canSave ? "Unsaved changes" : "Validation failed"}
         onAddChannel={() => setChannels((current) => [...current, createEmptyChannelConfig()])}
-        onAddModel={() => {}}
+        onAddModel={() =>
+          setModels((current) => [
+            ...current,
+            createEmptyModelConfig(channels.at(-1)?.id ?? channels[0]?.id ?? ""),
+          ])
+        }
         onValidate={() => {}}
         onSave={() => {}}
         onExport={() => {}}
-        disableAddModel
+        disableAddModel={channels.length === 0}
         disableValidate
         disableExport
         disableSave
@@ -52,6 +58,15 @@ export function UpstreamConfigPage() {
         onChange={(channelId, next) =>
           setChannels((current) =>
             current.map((channel) => (channel.id === channelId ? next : channel)),
+          )
+        }
+      />
+      <ModelRegistryTable
+        models={models}
+        channels={channels}
+        onChange={(modelId, updater) =>
+          setModels((current) =>
+            current.map((model) => (model.id === modelId ? { ...model, ...updater } : model)),
           )
         }
       />

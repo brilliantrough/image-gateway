@@ -131,3 +131,29 @@ textarea {
   color: #a12626;
   font-weight: 600;
 }
+
+.model-registry {
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.model-registry table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.model-registry th,
+.model-registry td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.model-registry input,
+.model-registry select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+}
