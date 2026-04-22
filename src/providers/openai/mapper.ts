@@ -3,15 +3,18 @@ import type { NormalizedImageRequest, NormalizedImageResponse } from "../../type
 
 export type OpenAIImagesRequest = Record<string, unknown>;
 
-export function toOpenAIRequest(request: NormalizedImageRequest): OpenAIImagesRequest {
+export function toOpenAIRequest(
+  request: NormalizedImageRequest,
+  providerName = "openai",
+): OpenAIImagesRequest {
   if (request.seed !== undefined) {
     throw new GatewayError({
       statusCode: 400,
       type: "unsupported_parameter",
       code: "provider_capability_mismatch",
-      message: "Parameter 'seed' is not supported by provider 'openai'.",
+      message: `Parameter 'seed' is not supported by provider '${providerName}'.`,
       param: "seed",
-      provider: "openai",
+      provider: providerName,
     });
   }
 
@@ -20,9 +23,9 @@ export function toOpenAIRequest(request: NormalizedImageRequest): OpenAIImagesRe
       statusCode: 400,
       type: "unsupported_parameter",
       code: "provider_capability_mismatch",
-      message: "Parameter 'negative_prompt' is not supported by provider 'openai'.",
+      message: `Parameter 'negative_prompt' is not supported by provider '${providerName}'.`,
       param: "negative_prompt",
-      provider: "openai",
+      provider: providerName,
     });
   }
 
