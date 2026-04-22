@@ -1,10 +1,15 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildApp } from "../../../src/app.js";
 import { UpstreamConfigPage } from "../../../src/ui/app.js";
+
+afterEach(() => {
+  cleanup();
+});
 
 describe("frontend static app", () => {
   const uiRoot = path.resolve("dist/ui");
@@ -58,5 +63,19 @@ describe("UpstreamConfigPage", () => {
         /models with the same display name are selected by descending numeric priority/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("adds a channel and requires a custom protocol name", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    await user.click(screen.getByRole("button", { name: "Add Channel" }));
+    const protocolSelect = screen.getAllByLabelText("Protocol").at(-1);
+    expect(protocolSelect).toBeTruthy();
+    await user.selectOptions(protocolSelect!, "custom");
+    await user.tab();
+
+    expect(screen.getByText(/requires a custom protocol name/i)).toBeInTheDocument();
   });
 });

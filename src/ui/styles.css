@@ -88,3 +88,41 @@ textarea {
   margin: 0;
   padding-left: 20px;
 }
+
+.channel-list {
+  margin-top: 24px;
+}
+
+.channel-list__grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.channel-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.channel-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.channel-card input,
+.channel-card select {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.field-error {
+  margin: 12px 0 0;
+  color: #a12626;
+  font-weight: 600;
+}
