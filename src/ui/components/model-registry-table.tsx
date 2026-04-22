@@ -4,6 +4,7 @@ export function ModelRegistryTable(props: {
   models: ModelConfig[];
   channels: ChannelConfig[];
   onChange(modelId: string, updater: ModelConfigUpdate): void;
+  onDelete(modelId: string): void;
 }) {
   return (
     <section className="panel model-registry">
@@ -15,6 +16,7 @@ export function ModelRegistryTable(props: {
             <th>Provider Model Name</th>
             <th>Channel</th>
             <th>Enabled</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -58,6 +60,11 @@ export function ModelRegistryTable(props: {
                   checked={model.enabled}
                   onChange={(event) => props.onChange(model.id, { enabled: event.target.checked })}
                 />
+              </td>
+              <td>
+                <button type="button" aria-label="Delete Model" onClick={() => props.onDelete(model.id)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

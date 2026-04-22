@@ -152,4 +152,46 @@ describe("UpstreamConfigPage", () => {
     expect(rows[1]).toHaveTextContent("Azure Backup");
     expect(within(rows[1]!).getByLabelText("Priority")).toHaveValue(100);
   });
+
+  it("deletes a provider model and removes its priority row", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    const providerCard = screen.getByRole("heading", { name: "OpenAI Main" }).closest("article");
+    expect(providerCard).toBeTruthy();
+
+    await user.click(within(providerCard!).getAllByRole("button", { name: "Delete Provider Model" })[0]!);
+
+    expect(within(providerCard!).queryByDisplayValue("gpt-image-1")).not.toBeInTheDocument();
+    expect(screen.queryAllByTestId("priority-row-gpt-image-1")).toHaveLength(1);
+  });
+
+  it("deletes a channel and cascades its models and priorities", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    const openAiCard = screen.getByRole("heading", { name: "OpenAI Main" }).closest("article");
+    expect(openAiCard).toBeTruthy();
+
+    await user.click(within(openAiCard!).getByRole("button", { name: "Delete Channel" }));
+
+    expect(screen.queryByRole("heading", { name: "OpenAI Main" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Azure Backup" })).toBeInTheDocument();
+    expect(screen.queryAllByLabelText("Model Channel")).toHaveLength(1);
+    expect(screen.queryAllByTestId("priority-row-gpt-image-1")).toHaveLength(1);
+  });
+
+  it("exports json even when validation fails", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    await user.click(screen.getByRole("button", { name: "Add Channel" }));
+    await user.click(screen.getByRole("button", { name: "Export JSON" }));
+
+    expect(screen.getByLabelText("Export JSON Preview")).toBeInTheDocument();
+    expect(screen.getByText(/export contains validation errors/i)).toBeInTheDocument();
+  });
 });

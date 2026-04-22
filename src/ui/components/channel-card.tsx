@@ -4,11 +4,13 @@ import { PROTOCOL_OPTIONS } from "../lib/protocol-options.js";
 
 export function ChannelCard(props: {
   channel: ChannelConfig;
+  onDelete(): void;
   onChange(next: ChannelConfig): void;
   modelCount: number;
   models: ModelConfig[];
   onAddModel(modelName: string): void;
   onModelChange(modelId: string, updater: ModelConfigUpdate): void;
+  onDeleteModel(modelId: string): void;
   errors: string[];
 }) {
   const [quickAddModelName, setQuickAddModelName] = useState("");
@@ -30,7 +32,12 @@ export function ChannelCard(props: {
           <h3>{props.channel.name || "New Channel"}</h3>
           <p>{props.modelCount} models</p>
         </div>
-        <span>{props.channel.enabled ? "Enabled" : "Disabled"}</span>
+        <div className="channel-card__actions">
+          <span>{props.channel.enabled ? "Enabled" : "Disabled"}</span>
+          <button type="button" className="ghost-button" onClick={props.onDelete}>
+            Delete Channel
+          </button>
+        </div>
       </header>
 
       <label>
@@ -154,6 +161,14 @@ export function ChannelCard(props: {
                 />
                 Provider Card Model Enabled
               </label>
+              <button
+                type="button"
+                className="ghost-button"
+                aria-label="Delete Provider Model"
+                onClick={() => props.onDeleteModel(model.id)}
+              >
+                Delete
+              </button>
             </div>
           ))}
         </div>

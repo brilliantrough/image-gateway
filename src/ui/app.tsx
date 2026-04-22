@@ -28,6 +28,23 @@ export function UpstreamConfigPage() {
     );
   };
 
+  const removeModel = (modelId: string) => {
+    setModels((current) => current.filter((model) => model.id !== modelId));
+    setPriorities((current) => current.filter((priority) => priority.modelId !== modelId));
+  };
+
+  const removeChannel = (channelId: string) => {
+    const removedModelIds = models
+      .filter((model) => model.channelId === channelId)
+      .map((model) => model.id);
+
+    setChannels((current) => current.filter((channel) => channel.id !== channelId));
+    setModels((current) => current.filter((model) => model.channelId !== channelId));
+    setPriorities((current) =>
+      current.filter((priority) => !removedModelIds.includes(priority.modelId)),
+    );
+  };
+
   const addModelToChannel = (channelId: string, modelName: string) => {
     const nextModelName = modelName.trim();
     if (!nextModelName) {
@@ -75,7 +92,7 @@ export function UpstreamConfigPage() {
         onExport={() => setExportPreview(exportConfig(config))}
         disableAddModel={channels.length === 0}
         disableValidate
-        disableExport={!validation.canSave}
+        disableExport={false}
         disableSave
       />
       <GlobalValidationSummary
@@ -87,15 +104,22 @@ export function UpstreamConfigPage() {
         channels={channels}
         models={models}
         channelFieldErrors={validation.channelFieldErrors}
+        onDeleteChannel={removeChannel}
         onAddModel={addModelToChannel}
         onModelChange={updateModel}
+        onDeleteModel={removeModel}
         onChange={(channelId, next) =>
           setChannels((current) =>
             current.map((channel) => (channel.id === channelId ? next : channel)),
           )
         }
       />
-      <ModelRegistryTable models={models} channels={channels} onChange={updateModel} />
+      <ModelRegistryTable
+        models={models}
+        channels={channels}
+        onChange={updateModel}
+        onDelete={removeModel}
+      />
       <PriorityGroupList
         groups={resolvedGroups}
         onPriorityChange={(modelId, priority) =>
@@ -105,6 +129,11 @@ export function UpstreamConfigPage() {
       {exportPreview ? (
         <section className="panel export-preview">
           <h2>Export Preview</h2>
+          <p className={`export-preview__status ${validation.canSave ? "is-valid" : "is-invalid"}`}>
+            {validation.canSave
+              ? "Export is ready for backend loading."
+              : "Export contains validation errors and may be rejected by the backend."}
+          </p>
           <label>
             Export JSON Preview
             <textarea aria-label="Export JSON Preview" readOnly value={exportPreview} />
