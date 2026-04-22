@@ -4,7 +4,7 @@ import { ChannelCardList } from "./components/channel-card-list.js";
 import { GlobalValidationSummary } from "./components/global-summary.js";
 import { ModelRegistryTable } from "./components/model-registry-table.js";
 import { PriorityGroupList } from "./components/priority-group-list.js";
-import type { ModelConfig } from "./types/config.js";
+import type { ModelConfigUpdate } from "./types/config.js";
 import {
   createEmptyChannelConfig,
   createEmptyModelConfig,
@@ -22,7 +22,7 @@ export function UpstreamConfigPage() {
   const [priorities, setPriorities] = useState(initialConfig.priorities);
   const [exportPreview, setExportPreview] = useState("");
 
-  const updateModel = (modelId: string, updater: Partial<ModelConfig>) => {
+  const updateModel = (modelId: string, updater: ModelConfigUpdate) => {
     setModels((current) =>
       current.map((model) => (model.id === modelId ? { ...model, ...updater } : model)),
     );

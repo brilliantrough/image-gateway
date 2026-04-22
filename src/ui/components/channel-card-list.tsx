@@ -1,4 +1,4 @@
-import type { ChannelConfig, ModelConfig } from "../types/config.js";
+import type { ChannelConfig, ModelConfig, ModelConfigUpdate } from "../types/config.js";
 import { ChannelCard } from "./channel-card.js";
 
 export function ChannelCardList(props: {
@@ -7,7 +7,7 @@ export function ChannelCardList(props: {
   channelFieldErrors: Record<string, string[]>;
   onChange(channelId: string, next: ChannelConfig): void;
   onAddModel(channelId: string, modelName: string): void;
-  onModelChange(modelId: string, updater: Partial<ModelConfig>): void;
+  onModelChange(modelId: string, updater: ModelConfigUpdate): void;
 }) {
   const modelCountByChannelId = new Map<string, number>();
   const modelsByChannelId = new Map<string, ModelConfig[]>();

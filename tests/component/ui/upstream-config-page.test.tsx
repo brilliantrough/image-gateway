@@ -117,13 +117,21 @@ describe("UpstreamConfigPage", () => {
     const quickAddInputs = screen.getAllByLabelText("Quick Add Provider Model");
     await user.type(quickAddInputs.at(-1)!, "doubao-seedream-4-0{enter}");
 
-    const displayNameInputs = screen.getAllByLabelText("Display Name");
-    const modelChannels = screen.getAllByLabelText("Model Channel");
-    const priorityRows = screen.getAllByTestId("priority-row-doubao-seedream-4-0");
-    const newModelChannel = modelChannels.at(-1) as HTMLSelectElement;
+    const providerCard = screen
+      .getByRole("heading", { name: "Provider Scoped Test" })
+      .closest("article");
 
-    expect(displayNameInputs.at(-1)).toHaveValue("doubao-seedream-4-0");
-    expect(newModelChannel.selectedOptions[0]?.textContent).toBe("Provider Scoped Test");
+    expect(providerCard).toBeTruthy();
+
+    const providerCardQueries = within(providerCard!);
+    const providerCardDisplayNames = providerCardQueries.getAllByLabelText(
+      "Provider Card Display Name",
+    );
+    const providerCardModelNames = providerCardQueries.getAllByLabelText("Provider Card Model Name");
+    const priorityRows = screen.getAllByTestId("priority-row-doubao-seedream-4-0");
+
+    expect(providerCardDisplayNames.at(-1)).toHaveValue("doubao-seedream-4-0");
+    expect(providerCardModelNames.at(-1)).toHaveValue("doubao-seedream-4-0");
     expect(priorityRows[0]).toHaveTextContent("Provider Scoped Test");
   });
 

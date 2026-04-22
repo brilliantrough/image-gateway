@@ -29,6 +29,13 @@ export type ModelConfig = {
   description?: string;
 };
 
+export type EditableModelConfigFields = Pick<
+  ModelConfig,
+  "displayName" | "providerModelName" | "channelId" | "enabled" | "description"
+>;
+
+export type ModelConfigUpdate = Partial<EditableModelConfigFields>;
+
 export type ModelPriority = {
   modelId: string;
   priority: number;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ChannelConfig, ModelConfig, ProtocolType } from "../types/config.js";
+import type { ChannelConfig, ModelConfig, ModelConfigUpdate, ProtocolType } from "../types/config.js";
 import { PROTOCOL_OPTIONS } from "../lib/protocol-options.js";
 
 export function ChannelCard(props: {
@@ -8,7 +8,7 @@ export function ChannelCard(props: {
   modelCount: number;
   models: ModelConfig[];
   onAddModel(modelName: string): void;
-  onModelChange(modelId: string, updater: Partial<ModelConfig>): void;
+  onModelChange(modelId: string, updater: ModelConfigUpdate): void;
   errors: string[];
 }) {
   const [quickAddModelName, setQuickAddModelName] = useState("");
@@ -70,7 +70,6 @@ export function ChannelCard(props: {
       <label>
         Protocol
         <select
-          aria-label="Protocol"
           value={props.channel.protocolType}
           onChange={(event) =>
             props.onChange({
@@ -130,7 +129,6 @@ export function ChannelCard(props: {
               <label>
                 Provider Card Display Name
                 <input
-                  aria-label="Provider Card Display Name"
                   value={model.displayName}
                   onChange={(event) =>
                     props.onModelChange(model.id, { displayName: event.target.value })
@@ -140,7 +138,6 @@ export function ChannelCard(props: {
               <label>
                 Provider Card Model Name
                 <input
-                  aria-label="Provider Card Model Name"
                   value={model.providerModelName}
                   onChange={(event) =>
                     props.onModelChange(model.id, { providerModelName: event.target.value })
@@ -149,7 +146,6 @@ export function ChannelCard(props: {
               </label>
               <label className="provider-models__toggle">
                 <input
-                  aria-label="Provider Card Model Enabled"
                   type="checkbox"
                   checked={model.enabled}
                   onChange={(event) =>

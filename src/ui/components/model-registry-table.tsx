@@ -1,9 +1,9 @@
-import type { ChannelConfig, ModelConfig } from "../types/config.js";
+import type { ChannelConfig, ModelConfig, ModelConfigUpdate } from "../types/config.js";
 
 export function ModelRegistryTable(props: {
   models: ModelConfig[];
   channels: ChannelConfig[];
-  onChange(modelId: string, updater: Partial<ModelConfig>): void;
+  onChange(modelId: string, updater: ModelConfigUpdate): void;
 }) {
   return (
     <section className="panel model-registry">
