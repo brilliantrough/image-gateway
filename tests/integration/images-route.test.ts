@@ -17,6 +17,7 @@ describe("POST /v1/images/generations", () => {
   });
 
   it("returns normalized image data", async () => {
+    provider.generateImage.mockReset();
     provider.generateImage.mockResolvedValueOnce({
       created: 1,
       data: [{ b64_json: "abc", url: null, mime_type: "image/png", revised_prompt: null }],
@@ -34,6 +35,11 @@ describe("POST /v1/images/generations", () => {
     });
 
     expect(response.statusCode).toBe(200);
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "gpt-image-1",
+      }),
+    );
     expect(response.json()).toMatchObject({
       data: [{ b64_json: "abc" }],
       request_id: "req_test",
