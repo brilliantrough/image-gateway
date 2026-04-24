@@ -48,6 +48,14 @@ function createConfig(): GatewayUpstreamConfig {
         enabled: true,
       },
       {
+        id: "aihubmix-main",
+        name: "AIHubMix OpenAI",
+        protocolType: "aihubmix-openai",
+        baseUrl: "https://aihubmix.com/v1",
+        apiKey: "test-aihubmix",
+        enabled: true,
+      },
+      {
         id: "backup-main",
         name: "Backup",
         protocolType: "custom",
@@ -75,6 +83,14 @@ function createConfig(): GatewayUpstreamConfig {
         enabled: true,
       },
       {
+        id: "aihubmix-gpt-image-1",
+        displayName: "gpt-image-2",
+        providerModelName: "gpt-image-2",
+        channelId: "aihubmix-main",
+        modelKind: "image-generation",
+        enabled: true,
+      },
+      {
         id: "backup-gpt-image-1",
         displayName: "gpt-image-1",
         providerModelName: "backup-image-model",
@@ -86,6 +102,7 @@ function createConfig(): GatewayUpstreamConfig {
     priorities: [
       { modelId: "openai-gpt-image-1", priority: 100 },
       { modelId: "ark-gpt-image-1", priority: 200 },
+      { modelId: "aihubmix-gpt-image-1", priority: 150 },
       { modelId: "backup-gpt-image-1", priority: 50 },
     ],
   };
@@ -170,6 +187,24 @@ describe("ConfiguredUpstreamRouter", () => {
     );
     expect(provider.generateImage).toHaveBeenCalledWith(
       expect.objectContaining({ model: "qwen-image-2.0" }),
+    );
+  });
+
+  it("routes aihubmix-openai as a first-class OpenAI-compatible protocol", async () => {
+    const request = { ...createBaseRequest(), model: "gpt-image-2" };
+    const provider: ImageProvider = {
+      generateImage: vi.fn().mockResolvedValue(createResponse()),
+    };
+    const providerFactory = vi.fn().mockReturnValue(provider);
+    const router = new ConfiguredUpstreamRouter(createConfig(), providerFactory);
+
+    await router.generateImage(request);
+
+    expect(providerFactory).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "aihubmix-main", protocolType: "aihubmix-openai" }),
+    );
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({ model: "gpt-image-2" }),
     );
   });
 });

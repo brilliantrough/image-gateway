@@ -187,6 +187,7 @@ function isSupportedRuntimeProtocol(channel: ChannelConfig): boolean {
     channel.protocolType === "volcengine-ark" ||
     channel.protocolType === "apimart-async" ||
     channel.protocolType === "google-gemini" ||
+    channel.protocolType === "aihubmix-openai" ||
     channel.protocolType === "custom"
   );
 }

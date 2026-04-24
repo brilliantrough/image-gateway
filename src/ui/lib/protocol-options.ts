@@ -9,6 +9,7 @@ export const PROTOCOL_OPTIONS: Array<{ value: ProtocolType; label: string }> = [
   { value: "volcengine-ark", label: "Volcengine Ark / 火山方舟" },
   { value: "apimart-async", label: "APIMart Async" },
   { value: "google-gemini", label: "Google Gemini" },
+  { value: "aihubmix-openai", label: "AIHubMix OpenAI" },
   { value: "custom", label: "Custom" },
 ];
 

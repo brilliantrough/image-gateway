@@ -2,6 +2,10 @@ import { GatewayError } from "../../lib/errors.js";
 import type { NormalizedImageRequest, NormalizedImageResponse } from "../../types/image.js";
 
 export type OpenAIImagesRequest = Record<string, unknown>;
+export type OpenAIImageEditRequest = OpenAIImagesRequest & {
+  image: string | string[];
+  mask?: string;
+};
 
 const RESERVED_EXTRA_BODY_FIELDS = new Set([
   "model",
@@ -91,6 +95,37 @@ export function toOpenAIRequest(
   }
 
   return payload;
+}
+
+export function toOpenAIEditRequest(
+  request: NormalizedImageRequest,
+  providerName = "openai",
+  options: {
+    stripResponseFormat?: boolean;
+    supportsSeed?: boolean;
+  } = {},
+): OpenAIImageEditRequest {
+  const payload = toOpenAIRequest(request, providerName, options);
+  const images = [request.image, ...(request.images ?? [])].filter(
+    (value): value is string => Boolean(value),
+  );
+
+  if (images.length === 0) {
+    throw new GatewayError({
+      statusCode: 400,
+      type: "invalid_request",
+      code: "image_input_required",
+      message: "OpenAI-compatible image edit requests require 'image' or 'images'.",
+      param: "image",
+      provider: providerName,
+    });
+  }
+
+  return {
+    ...payload,
+    image: images.length === 1 ? images[0]! : images,
+    ...(request.mask ? { mask: request.mask } : {}),
+  };
 }
 
 export function toNormalizedOpenAIResponse(input: {

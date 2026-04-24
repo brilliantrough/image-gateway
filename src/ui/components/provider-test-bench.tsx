@@ -670,16 +670,23 @@ export function ProviderTestBench(props: {
 }
 
 async function readGatewayErrorMessage(response: Response): Promise<string> {
+  const fallback = `Request failed with status ${response.status}`;
   try {
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      const text = (await response.text()).trim();
+      return text ? `${fallback}: ${text.slice(0, 300)}` : fallback;
+    }
+
     const payload = (await response.json()) as {
       error?: {
         message?: string;
       };
     };
 
-    return payload.error?.message ?? `Request failed with status ${response.status}`;
+    return payload.error?.message ?? fallback;
   } catch {
-    return `Request failed with status ${response.status}`;
+    return fallback;
   }
 }
 

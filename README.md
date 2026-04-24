@@ -136,6 +136,32 @@ The frontend includes a draft-safe provider test bench:
 
 This is intended for checking compatibility toggles such as `stripResponseFormat` before saving the config.
 
+### AIHubMix OpenAI-Compatible Image Models
+
+For AIHubMix `gpt-image-*` models through its OpenAI-compatible Images API, configure the channel as an OpenAI-compatible upstream:
+
+```json
+{
+  "protocolType": "aihubmix-openai",
+  "baseUrl": "https://aihubmix.com/v1",
+  "apiKey": "replace-with-aihubmix-api-key"
+}
+```
+
+Use `providerModelName` for the upstream model name, for example `gpt-image-2`.
+
+The gateway maps prompt-only requests to `/v1/images/generations`. Requests with `image`, `images`, or `mask` are mapped to `/v1/images/edits` and sent as multipart file uploads. Browser uploads are accepted as `data:image/...;base64`; http(s) image URLs are fetched by the gateway before forwarding.
+
+Do not configure the channel `baseUrl` as an AIHubMix prediction endpoint when using the OpenAI-compatible protocol. Prediction-style APIs need a provider-native adapter instead of `aihubmix-openai`.
+
+Image-to-image and edit calls can take much longer than prompt-only generation. If the browser reports a plain `Request failed with status 504`, check whether the response came from a dev proxy or reverse proxy before changing model parameters. For local one-port deployment, inspect backend logs with:
+
+```bash
+bash deploy/local-3100.sh logs
+```
+
+The backend logs OpenAI-compatible upstream request start, success, failure, mode, model, and duration. If no upstream request log appears, the request probably did not reach this backend instance.
+
 For a production-style build and local server startup:
 
 ```bash
@@ -213,7 +239,7 @@ When `UPSTREAM_CONFIG_PATH` is set, the gateway routes requests with the configu
 - missing priority defaults to `0`
 - duplicate explicit priority numbers in `priorities` are invalid globally at config load
 - the selected candidate's `providerModelName` is sent to the upstream provider
-- backend-supported protocol types are `openai`, `azure-openai`, `aliyun-qwen-image`, `volcengine-ark`, `apimart-async`, `google-gemini`, and `custom`
+- backend-supported protocol types are `openai`, `azure-openai`, `aliyun-qwen-image`, `volcengine-ark`, `apimart-async`, `google-gemini`, `aihubmix-openai`, and `custom`
 - the frontend/schema may still expose placeholder protocol families such as `aliyun` and `tencent`, but the backend router returns `unsupported_protocol` for them until native adapters are added
 
 For the detailed protocol-to-upstream endpoint mapping and feature support status, see:

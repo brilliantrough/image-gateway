@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GatewayError } from "../../src/lib/errors.js";
-import { toOpenAIRequest } from "../../src/providers/openai/mapper.js";
+import { toOpenAIEditRequest, toOpenAIRequest } from "../../src/providers/openai/mapper.js";
 
 describe("toOpenAIRequest", () => {
   it("maps supported text generation fields", () => {
@@ -118,6 +118,58 @@ describe("toOpenAIRequest", () => {
         n: 1,
         response_format: "b64_json",
         seed: 1,
+        images: [],
+        extra_body: {},
+      }),
+    ).toThrowError(GatewayError);
+  });
+
+  it("maps image-to-image requests to edit payload shape", () => {
+    const result = toOpenAIEditRequest({
+      mode: "image-to-image",
+      model: "gpt-image-2",
+      prompt: "turn this cat into cartoon style",
+      size: "1024x1024",
+      n: 1,
+      response_format: "b64_json",
+      image: "data:image/png;base64,abc",
+      images: [],
+      extra_body: {},
+    });
+
+    expect(result).toMatchObject({
+      model: "gpt-image-2",
+      prompt: "turn this cat into cartoon style",
+      image: "data:image/png;base64,abc",
+    });
+  });
+
+  it("maps multi-image edit requests to array-valued image", () => {
+    const result = toOpenAIEditRequest({
+      mode: "edit",
+      model: "gpt-image-2",
+      prompt: "combine the references",
+      size: "1024x1024",
+      n: 1,
+      response_format: "b64_json",
+      images: ["data:image/png;base64,aaa", "data:image/png;base64,bbb"],
+      mask: "data:image/png;base64,ccc",
+      extra_body: {},
+    });
+
+    expect(result.image).toEqual(["data:image/png;base64,aaa", "data:image/png;base64,bbb"]);
+    expect(result.mask).toBe("data:image/png;base64,ccc");
+  });
+
+  it("rejects edit payloads without image input", () => {
+    expect(() =>
+      toOpenAIEditRequest({
+        mode: "edit",
+        model: "gpt-image-2",
+        prompt: "edit this",
+        size: "1024x1024",
+        n: 1,
+        response_format: "b64_json",
         images: [],
         extra_body: {},
       }),

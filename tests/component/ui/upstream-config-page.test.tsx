@@ -101,6 +101,22 @@ describe("UpstreamConfigPage", () => {
     expect(screen.getAllByText("Validation failed").length).toBeGreaterThan(0);
   });
 
+  it("exposes AIHubMix OpenAI without requiring a custom protocol name", async () => {
+    const user = userEvent.setup();
+
+    render(<UpstreamConfigPage />);
+
+    await user.click(screen.getByRole("button", { name: "Add Channel" }));
+    const protocolSelect = screen.getAllByLabelText("Protocol").at(-1);
+    expect(protocolSelect).toBeTruthy();
+    await user.selectOptions(protocolSelect!, "aihubmix-openai");
+
+    expect(within(protocolSelect!).getByRole("option", { name: "AIHubMix OpenAI" })).toHaveValue(
+      "aihubmix-openai",
+    );
+    expect(screen.queryByLabelText("Custom Protocol Name")).not.toBeInTheDocument();
+  });
+
   it("adds a model row tied to an existing channel", async () => {
     const user = userEvent.setup();
 

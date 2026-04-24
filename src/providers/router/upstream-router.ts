@@ -92,7 +92,7 @@ export class ConfiguredUpstreamRouter implements ImageProvider {
 }
 
 export function createProviderForChannel(channel: ChannelConfig): ImageProvider {
-  const providerName = channel.protocolName?.trim() || channel.protocolType;
+  const providerName = resolveProviderName(channel);
 
   switch (channel.protocolType) {
     case "openai":
@@ -100,6 +100,7 @@ export function createProviderForChannel(channel: ChannelConfig): ImageProvider 
         stripResponseFormat: channel.stripResponseFormat,
       });
     case "azure-openai":
+    case "aihubmix-openai":
     case "custom":
       return new OpenAICompatibleImageProvider(
         createOpenAICompatibleClient(channel),
@@ -128,4 +129,16 @@ export function createProviderForChannel(channel: ChannelConfig): ImageProvider 
 
 function formatProtocolLabel(protocolType: ProtocolType): string {
   return protocolType;
+}
+
+function resolveProviderName(channel: ChannelConfig): string {
+  if (channel.protocolName?.trim()) {
+    return channel.protocolName.trim();
+  }
+
+  if (channel.protocolType === "aihubmix-openai") {
+    return "aihubmix-openai";
+  }
+
+  return channel.protocolType;
 }

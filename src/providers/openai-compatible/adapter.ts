@@ -1,9 +1,15 @@
 import { randomUUID } from "node:crypto";
-import type OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import { GatewayError } from "../../lib/errors.js";
 import type { NormalizedImageRequest } from "../../types/image.js";
 import type { ImageProvider } from "../types.js";
-import { toNormalizedOpenAIResponse, toOpenAIRequest } from "../openai/mapper.js";
+import {
+  type OpenAIImageEditRequest,
+  type OpenAIImagesRequest,
+  toNormalizedOpenAIResponse,
+  toOpenAIEditRequest,
+  toOpenAIRequest,
+} from "../openai/mapper.js";
 
 export class OpenAICompatibleImageProvider implements ImageProvider {
   constructor(
@@ -16,9 +22,15 @@ export class OpenAICompatibleImageProvider implements ImageProvider {
   ) {}
 
   async generateImage(request: NormalizedImageRequest) {
+    const startedAt = Date.now();
     try {
-      const payload = toOpenAIRequest(request, this.providerName, this.options);
-      const response = await this.client.images.generate(payload as never);
+      const payload = await this.toUpstreamPayload(request);
+      logUpstreamStart({ providerName: this.providerName, request });
+      const response =
+        request.mode === "text-to-image"
+          ? await this.client.images.generate(payload as never)
+          : await this.client.images.edit(payload as never);
+      logUpstreamSuccess({ providerName: this.providerName, request, durationMs: Date.now() - startedAt });
 
       return toNormalizedOpenAIResponse({
         created: Math.floor(Date.now() / 1000),
@@ -41,6 +53,7 @@ export class OpenAICompatibleImageProvider implements ImageProvider {
          request,
          detail,
          error,
+         durationMs: Date.now() - startedAt,
        });
 
       throw new GatewayError({
@@ -54,6 +67,112 @@ export class OpenAICompatibleImageProvider implements ImageProvider {
         requestId: detail.requestId ?? undefined,
       });
     }
+  }
+
+  private async toUpstreamPayload(
+    request: NormalizedImageRequest,
+  ): Promise<OpenAIImagesRequest | OpenAIImageEditRequest> {
+    if (request.mode === "text-to-image") {
+      return toOpenAIRequest(request, this.providerName, this.options);
+    }
+
+    const payload = toOpenAIEditRequest(request, this.providerName, this.options);
+
+    return {
+      ...payload,
+      image: await toUploadableImage(payload.image, "image"),
+      ...(payload.mask ? { mask: await toUploadableImage(payload.mask, "mask") } : {}),
+    };
+  }
+}
+
+async function toUploadableImage(
+  input: string | string[],
+  fieldName: "image" | "mask",
+): Promise<unknown> {
+  if (Array.isArray(input)) {
+    return Promise.all(input.map((item, index) => toUploadableImageFile(item, `${fieldName}-${index}`)));
+  }
+
+  return toUploadableImageFile(input, fieldName);
+}
+
+async function toUploadableImageFile(input: string, fallbackName: string): Promise<unknown> {
+  const dataUrl = parseDataUrl(input);
+  if (dataUrl) {
+    return toFile(Buffer.from(dataUrl.base64, "base64"), `${fallbackName}.${dataUrl.extension}`, {
+      type: dataUrl.mimeType,
+    });
+  }
+
+  if (isHttpUrl(input)) {
+    const response = await fetch(input);
+    if (!response.ok) {
+      throw new GatewayError({
+        statusCode: 400,
+        type: "invalid_request",
+        code: "image_fetch_failed",
+        message: `Failed to fetch image URL '${input}': status ${response.status}.`,
+        param: fallbackName,
+      });
+    }
+
+    const contentType = response.headers.get("content-type") ?? "image/png";
+    const buffer = Buffer.from(await response.arrayBuffer());
+    return toFile(buffer, `${fallbackName}.${extensionFromMimeType(contentType)}`, {
+      type: contentType,
+    });
+  }
+
+  if (looksLikeBase64(input)) {
+    return toFile(Buffer.from(input, "base64"), `${fallbackName}.png`, {
+      type: "image/png",
+    });
+  }
+
+  throw new GatewayError({
+    statusCode: 400,
+    type: "unsupported_parameter",
+    code: "provider_capability_mismatch",
+    message:
+      "OpenAI-compatible image edit requests require image inputs as data:image/...;base64, plain base64, or an http(s) URL fetchable by the gateway.",
+    param: fallbackName,
+  });
+}
+
+function parseDataUrl(value: string): { mimeType: string; base64: string; extension: string } | null {
+  const match = value.match(/^data:([^;]+);base64,(.+)$/);
+  if (!match) {
+    return null;
+  }
+
+  const mimeType = match[1]!;
+  return {
+    mimeType,
+    base64: match[2]!,
+    extension: extensionFromMimeType(mimeType),
+  };
+}
+
+function isHttpUrl(value: string): boolean {
+  return value.startsWith("http://") || value.startsWith("https://");
+}
+
+function looksLikeBase64(value: string): boolean {
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(value) && value.length > 32;
+}
+
+function extensionFromMimeType(mimeType: string): string {
+  const normalized = mimeType.toLowerCase().split(";")[0]?.trim();
+  switch (normalized) {
+    case "image/jpeg":
+    case "image/jpg":
+      return "jpg";
+    case "image/webp":
+      return "webp";
+    case "image/png":
+    default:
+      return "png";
   }
 }
 
@@ -120,6 +239,7 @@ function logUpstreamFailure(input: {
     message: string | null;
   };
   error: unknown;
+  durationMs: number;
 }) {
   const logPayload = {
     event: "upstream_image_generation_failed",
@@ -133,8 +253,36 @@ function logUpstreamFailure(input: {
     upstream_code: input.detail.code,
     upstream_type: input.detail.type,
     upstream_message: input.detail.message,
+    duration_ms: input.durationMs,
     error_name: input.error instanceof Error ? input.error.name : typeof input.error,
   };
 
   console.error("[image-gateway] upstream failure", logPayload);
+}
+
+function logUpstreamStart(input: { providerName: string; request: NormalizedImageRequest }) {
+  console.info("[image-gateway] upstream request", {
+    event: "upstream_image_request_started",
+    provider: input.providerName,
+    model: input.request.model,
+    mode: input.request.mode,
+    size: input.request.size,
+    n: input.request.n,
+    has_image: Boolean(input.request.image || (input.request.images?.length ?? 0) > 0),
+    has_mask: Boolean(input.request.mask),
+  });
+}
+
+function logUpstreamSuccess(input: {
+  providerName: string;
+  request: NormalizedImageRequest;
+  durationMs: number;
+}) {
+  console.info("[image-gateway] upstream success", {
+    event: "upstream_image_request_succeeded",
+    provider: input.providerName,
+    model: input.request.model,
+    mode: input.request.mode,
+    duration_ms: input.durationMs,
+  });
 }

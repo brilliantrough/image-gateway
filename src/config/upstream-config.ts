@@ -11,6 +11,7 @@ export const protocolTypeSchema = z.enum([
   "volcengine-ark",
   "apimart-async",
   "google-gemini",
+  "aihubmix-openai",
   "custom",
 ]);
 

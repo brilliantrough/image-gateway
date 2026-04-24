@@ -7,6 +7,7 @@ export type ProtocolType =
   | "volcengine-ark"
   | "apimart-async"
   | "google-gemini"
+  | "aihubmix-openai"
   | "custom";
 
 export type ChannelConfig = {

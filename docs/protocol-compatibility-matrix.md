@@ -44,6 +44,7 @@ Important schema behavior:
 |---|---:|---|---|
 | `openai` | Yes | OpenAI Images API via OpenAI SDK | Official OpenAI-compatible image generation. |
 | `azure-openai` | Yes | OpenAI-compatible Images API via OpenAI SDK | Azure deployments that expose compatible image generation. |
+| `aihubmix-openai` | Yes | AIHubMix OpenAI-compatible Images API via OpenAI SDK | AIHubMix `gpt-image-*` models exposed through `/v1/images/*`. |
 | `custom` | Yes | OpenAI-compatible Images API via OpenAI SDK | Third-party OpenAI-compatible providers. |
 | `volcengine-ark` | Yes | 火山方舟 ImageGenerations API | ByteDance / 火山方舟 Seedream and SeedEdit image models. |
 | `aliyun-qwen-image` | Yes | 阿里云 DashScope native Qwen Image API | Qwen Image models using `input.messages` and `parameters`. |
@@ -57,28 +58,33 @@ Important schema behavior:
 | Gateway `protocolType` | Gateway mode | Upstream endpoint / SDK call | Upstream request shape |
 |---|---|---|---|
 | `openai` | `text-to-image` | `client.images.generate()` | `{ model, prompt, size, n, response_format, ... }` |
-| `openai` | `image-to-image` | `client.images.generate()` | `{ model, prompt, image, size, n, ... }` |
-| `openai` | `edit` | `client.images.generate()` | `{ model, prompt, image, mask, size, n, ... }` |
-| `azure-openai` | all modes | `client.images.generate()` | OpenAI-compatible request body |
-| `custom` | all modes | `client.images.generate()` | OpenAI-compatible request body |
+| `openai` | `image-to-image` | `client.images.edit()` / `/images/edits` | multipart `{ model, prompt, image, size, n, ... }` |
+| `openai` | `edit` | `client.images.edit()` / `/images/edits` | multipart `{ model, prompt, image, mask, size, n, ... }` |
+| `azure-openai` | `text-to-image` | `client.images.generate()` | OpenAI-compatible JSON request body |
+| `azure-openai` | `image-to-image`, `edit` | `client.images.edit()` / `/images/edits` | OpenAI-compatible multipart edit body |
+| `aihubmix-openai` | `text-to-image` | `client.images.generate()` / `/images/generations` | OpenAI-compatible JSON request body |
+| `aihubmix-openai` | `image-to-image`, `edit` | `client.images.edit()` / `/images/edits` | OpenAI-compatible multipart edit body |
+| `custom` | `text-to-image` | `client.images.generate()` | OpenAI-compatible JSON request body |
+| `custom` | `image-to-image`, `edit` | `client.images.edit()` / `/images/edits` | OpenAI-compatible multipart edit body |
 | `volcengine-ark` | all modes | `POST {baseUrl}/images/generations` | Ark ImageGenerations JSON request, with `image` always sent as an array |
 | `aliyun-qwen-image` | all modes | `POST {baseUrl}/api/v1/services/aigc/multimodal-generation/generation` | `{ model, input: { messages: [...] }, parameters: {...} }` |
 | `apimart-async` | all modes | `POST {baseUrl}/images/generations`, then `GET {baseUrl}/tasks/{task_id}?language=en` | Submit task, poll task result |
 | `google-gemini` | `text-to-image`, `image-to-image` | `POST {baseUrl}/models/{model}:generateContent?key=...` | `{ contents, generationConfig: { responseModalities: ["TEXT", "IMAGE"], imageConfig } }` |
 
-Current OpenAI caveat:
+Current OpenAI-compatible caveat:
 
 | Protocol | Caveat |
 |---|---|
-| `openai` | `text-to-image` is the strongest path. `image-to-image` and `edit` currently forward `image` / `mask` through `images.generate()` instead of selecting a separate official edit endpoint. Treat these as partial until the adapter has explicit mode-specific OpenAI endpoint selection. |
+| `openai`, `azure-openai`, `aihubmix-openai`, `custom` | `text-to-image` uses `/images/generations`; `image-to-image` and `edit` use `/images/edits`. Image inputs are converted by the gateway to multipart files from `data:image/...;base64`, plain base64, or http(s) URLs. Third-party providers must implement OpenAI-compatible `/images/edits`; otherwise use a provider-native adapter. |
 
 ## Feature Support Matrix
 
 | `protocolType` | Text-to-image | Image-to-image | Edit with mask | `seed` | `negative_prompt` | `response_format=url` | `response_format=b64_json` | Notes |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| `openai` | Supported | Partial | Partial | Not supported | Not supported | Supported | Supported | Edit path needs mode-specific endpoint work. |
-| `azure-openai` | Partial | Partial | Partial | Not supported | Not supported | Partial | Partial | Depends on Azure deployment/model compatibility. |
-| `custom` | Partial | Partial | Partial | Not supported | Not supported | Partial | Partial | Depends on upstream OpenAI compatibility. `stripResponseFormat` can be enabled for providers that reject `response_format`. |
+| `openai` | Supported | Supported | Supported | Not supported | Not supported | Supported | Supported | Image-to-image and masked edit use `/images/edits`. |
+| `azure-openai` | Partial | Partial | Partial | Not supported | Not supported | Partial | Partial | Depends on Azure deployment/model compatibility and whether `/images/edits` is exposed. |
+| `aihubmix-openai` | Supported | Supported | Supported | Not supported | Not supported | Partial | Partial | AIHubMix OpenAI-compatible Images API for `gpt-image-*`; use `baseUrl=https://aihubmix.com/v1`. |
+| `custom` | Partial | Partial | Partial | Not supported | Not supported | Partial | Partial | Depends on upstream OpenAI compatibility and whether `/images/edits` is exposed. `stripResponseFormat` can be enabled for providers that reject `response_format`. |
 | `volcengine-ark` | Supported | Supported | Partial | Partial | Not supported | Supported | Supported | Dedicated Ark adapter. `seed` is forwarded only for documented Seedream 3.0 t2i / SeedEdit 3.0 models. |
 | `aliyun-qwen-image` | Supported | Supported | Supported | Not supported | Supported | Supported | Supported | Converts `1024x1024` to `1024*1024`; downloads image URLs when public response wants `b64_json`. |
 | `apimart-async` | Supported | Supported | Partial | Via `extra_body` only | Via `extra_body` only | Supported | Supported | Submit response is async. Adapter now downloads public result URLs when the caller requests `b64_json`. |
@@ -94,7 +100,22 @@ Used by:
 
 - `openai`
 - `azure-openai`
+- `aihubmix-openai`
 - `custom`
+
+Endpoint resolution:
+
+| Request mode | SDK call / path | Notes |
+|---|---|---|
+| `text-to-image` | `client.images.generate()` / `/images/generations` | JSON request body. |
+| `image-to-image` | `client.images.edit()` / `/images/edits` | Multipart request body with `image`. |
+| `edit` | `client.images.edit()` / `/images/edits` | Multipart request body with `image` and optional `mask`. |
+
+AIHubMix OpenAI-compatible example:
+
+| Provider | Recommended gateway protocol | Recommended `baseUrl` | Notes |
+|---|---|---|---|
+| AIHubMix `gpt-image-*` through OpenAI-compatible Images API | `aihubmix-openai` | `https://aihubmix.com/v1` | Do not set `baseUrl` to a prediction endpoint. The gateway calls `/v1/images/generations` for prompt-only requests and `/v1/images/edits` for image-to-image/edit requests. |
 
 Mapping:
 
@@ -112,9 +133,9 @@ Mapping:
 | `output_compression` | `output_compression` | Officially for `gpt-image-*` with `jpeg/webp`. |
 | `extra_body.moderation` | `moderation` | Officially for `gpt-image-*`; the current adapter passes it via `extra_body`. |
 | `user` | `user` | Direct. |
-| `image` | `image` | Direct. |
-| `images` | `image` | Mapped to array-valued `image`. |
-| `mask` | `mask` | Direct. |
+| `image` | `image` | In edit modes, converted to multipart file upload. Accepts `data:image/...;base64`, plain base64, or http(s) URL fetchable by the gateway. |
+| `images` | `image` | In edit modes, converted to array-valued multipart file upload. |
+| `mask` | `mask` | In edit mode, converted to multipart file upload. |
 | `seed` | `seed` | Only forwarded when adapter option `supportsSeed` is enabled. No runtime protocol currently uses this generic path for seed. |
 | `negative_prompt` | None | Rejected by this adapter path. |
 | `extra_body` | merged request fields | Reserved fields cannot override routed/core fields. |
