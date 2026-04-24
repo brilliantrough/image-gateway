@@ -25,8 +25,12 @@ const RESERVED_EXTRA_BODY_FIELDS = new Set([
 export function toOpenAIRequest(
   request: NormalizedImageRequest,
   providerName = "openai",
+  options: {
+    stripResponseFormat?: boolean;
+    supportsSeed?: boolean;
+  } = {},
 ): OpenAIImagesRequest {
-  if (request.seed !== undefined) {
+  if (request.seed !== undefined && !options.supportsSeed) {
     throw new GatewayError({
       statusCode: 400,
       type: "unsupported_parameter",
@@ -58,7 +62,6 @@ export function toOpenAIRequest(
     prompt: request.prompt,
     size: request.size,
     n: request.n,
-    response_format: request.response_format,
     quality: request.quality,
     style: request.style,
     background: request.background,
@@ -66,6 +69,10 @@ export function toOpenAIRequest(
     output_compression: request.output_compression,
     user: request.user,
   };
+
+  if (!options.stripResponseFormat) {
+    payload.response_format = request.response_format;
+  }
 
   if (request.image) {
     payload.image = request.image;
@@ -77,6 +84,10 @@ export function toOpenAIRequest(
 
   if (request.mask) {
     payload.mask = request.mask;
+  }
+
+  if (options.supportsSeed && request.seed !== undefined) {
+    payload.seed = request.seed;
   }
 
   return payload;

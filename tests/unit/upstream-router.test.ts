@@ -41,10 +41,10 @@ function createConfig(): GatewayUpstreamConfig {
       },
       {
         id: "ark-main",
-        name: "Volcengine Ark",
-        protocolType: "volcengine-ark",
-        baseUrl: "https://ark.example.com/v1",
-        apiKey: "test-ark",
+        name: "Aliyun Qwen Image",
+        protocolType: "aliyun-qwen-image",
+        baseUrl: "https://dashscope.aliyuncs.com",
+        apiKey: "test-aliyun",
         enabled: true,
       },
       {
@@ -69,7 +69,7 @@ function createConfig(): GatewayUpstreamConfig {
       {
         id: "ark-gpt-image-1",
         displayName: "gpt-image-1",
-        providerModelName: "doubao-seedream-4-0",
+        providerModelName: "qwen-image-2.0",
         channelId: "ark-main",
         modelKind: "image-generation",
         enabled: true,
@@ -102,10 +102,10 @@ describe("ConfiguredUpstreamRouter", () => {
     await router.generateImage(createBaseRequest());
 
     expect(providerFactory).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "ark-main", protocolType: "volcengine-ark" }),
+      expect.objectContaining({ id: "ark-main", protocolType: "aliyun-qwen-image" }),
     );
     expect(provider.generateImage).toHaveBeenCalledWith(
-      expect.objectContaining({ model: "doubao-seedream-4-0" }),
+      expect.objectContaining({ model: "qwen-image-2.0" }),
     );
   });
 
@@ -166,10 +166,10 @@ describe("ConfiguredUpstreamRouter", () => {
     await router.generateImage(createBaseRequest());
 
     expect(providerFactory).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "ark-main", protocolType: "volcengine-ark" }),
+      expect.objectContaining({ id: "ark-main", protocolType: "aliyun-qwen-image" }),
     );
     expect(provider.generateImage).toHaveBeenCalledWith(
-      expect.objectContaining({ model: "doubao-seedream-4-0" }),
+      expect.objectContaining({ model: "qwen-image-2.0" }),
     );
   });
 });

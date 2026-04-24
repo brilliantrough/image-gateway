@@ -1,12 +1,16 @@
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { z } from "zod";
 
 export const protocolTypeSchema = z.enum([
   "openai",
   "azure-openai",
+  "aliyun-qwen-image",
   "aliyun",
   "tencent",
   "volcengine-ark",
+  "apimart-async",
+  "google-gemini",
   "custom",
 ]);
 
@@ -17,6 +21,7 @@ export const channelConfigSchema = z.object({
   protocolName: z.string().optional(),
   baseUrl: z.string().url(),
   apiKey: z.string(),
+  stripResponseFormat: z.boolean().default(false),
   enabled: z.boolean(),
   description: z.string().optional(),
 }).strict();
@@ -36,17 +41,25 @@ export const modelPrioritySchema = z.object({
   priority: z.number().int().positive(),
 }).strict();
 
+export const frontendSettingsSchema = z.object({
+  invocationStudio: z.object({
+    minimalMode: z.boolean().default(false),
+  }).default({ minimalMode: false }),
+}).default({ invocationStudio: { minimalMode: false } });
+
 export const gatewayUpstreamConfigSchema = z.object({
   version: z.literal(1),
   channels: z.array(channelConfigSchema),
   models: z.array(modelConfigSchema),
   priorities: z.array(modelPrioritySchema),
+  frontendSettings: frontendSettingsSchema,
 }).strict();
 
 export type ProtocolType = z.infer<typeof protocolTypeSchema>;
 export type ChannelConfig = z.infer<typeof channelConfigSchema>;
 export type ModelConfig = z.infer<typeof modelConfigSchema>;
 export type ModelPriority = z.infer<typeof modelPrioritySchema>;
+export type FrontendSettings = z.infer<typeof frontendSettingsSchema>;
 export type GatewayUpstreamConfig = z.infer<typeof gatewayUpstreamConfigSchema>;
 
 function findDuplicateId<T extends { id: string }>(items: T[]): string | null {
@@ -110,4 +123,20 @@ export async function loadUpstreamConfigFile(configPath: string): Promise<Gatewa
   const config = gatewayUpstreamConfigSchema.parse(parsedJson);
 
   return validateUpstreamConfig(config);
+}
+
+export async function saveUpstreamConfigFile(
+  configPath: string,
+  config: GatewayUpstreamConfig,
+): Promise<void> {
+  const directory = path.dirname(configPath);
+  const tempDirectory = await mkdtemp(path.join(directory, ".upstreams-"));
+  const tempFile = path.join(tempDirectory, path.basename(configPath));
+
+  try {
+    await writeFile(tempFile, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+    await rename(tempFile, configPath);
+  } finally {
+    await rm(tempDirectory, { recursive: true, force: true }).catch(() => {});
+  }
 }

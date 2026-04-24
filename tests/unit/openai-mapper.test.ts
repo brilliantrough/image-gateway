@@ -55,6 +55,25 @@ describe("toOpenAIRequest", () => {
     expect(result.response_format).toBe("url");
   });
 
+  it("can omit response_format for non-standard upstreams", () => {
+    const result = toOpenAIRequest(
+      {
+        mode: "text-to-image",
+        model: "gpt-image-1",
+        prompt: "orange cat",
+        size: "1024x1024",
+        n: 1,
+        response_format: "b64_json",
+        images: [],
+        extra_body: {},
+      },
+      "openai",
+      { stripResponseFormat: true },
+    );
+
+    expect(result.response_format).toBeUndefined();
+  });
+
   it("ignores reserved extra_body image fields", () => {
     const result = toOpenAIRequest({
       mode: "text-to-image",
@@ -104,4 +123,5 @@ describe("toOpenAIRequest", () => {
       }),
     ).toThrowError(GatewayError);
   });
+
 });

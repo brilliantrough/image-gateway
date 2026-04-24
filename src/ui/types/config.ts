@@ -1,9 +1,12 @@
 export type ProtocolType =
   | "openai"
   | "azure-openai"
+  | "aliyun-qwen-image"
   | "aliyun"
   | "tencent"
   | "volcengine-ark"
+  | "apimart-async"
+  | "google-gemini"
   | "custom";
 
 export type ChannelConfig = {
@@ -13,6 +16,7 @@ export type ChannelConfig = {
   protocolName?: string;
   baseUrl: string;
   apiKey: string;
+  stripResponseFormat?: boolean;
   enabled: boolean;
   description?: string;
 };
@@ -41,11 +45,36 @@ export type ModelPriority = {
   priority: number;
 };
 
+export type FrontendSettings = {
+  invocationStudio: {
+    minimalMode: boolean;
+  };
+};
+
 export type GatewayUpstreamConfig = {
   version: 1;
   channels: ChannelConfig[];
   models: ModelConfig[];
   priorities: ModelPriority[];
+  frontendSettings: FrontendSettings;
+};
+
+export type PublicChannelCatalogItem = Pick<
+  ChannelConfig,
+  "id" | "name" | "protocolType" | "protocolName" | "description"
+>;
+
+export type PublicModelCatalogItem = Pick<
+  ModelConfig,
+  "id" | "displayName" | "providerModelName" | "channelId" | "modelKind" | "description"
+>;
+
+export type PublicInvocationCatalog = {
+  version: 1;
+  channels: PublicChannelCatalogItem[];
+  models: PublicModelCatalogItem[];
+  priorities: ModelPriority[];
+  frontendSettings?: FrontendSettings;
 };
 
 export type ResolvedModelGroup = {

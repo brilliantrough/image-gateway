@@ -13,6 +13,26 @@ describe("runtime config manager", () => {
     expect(manager.getProvider()).toBe(provider);
   });
 
+  it("returns the configured persistence path", () => {
+    const manager = createRuntimeConfigManager({
+      provider: { generateImage: vi.fn() },
+      config: null,
+      configPath: "config/upstreams.json",
+    });
+
+    expect(manager.getConfigPath()).toBe("config/upstreams.json");
+  });
+
+  it("supports legacy mode without a persistence path", () => {
+    const manager = createRuntimeConfigManager({
+      provider: { generateImage: vi.fn() },
+      config: null,
+      configPath: null,
+    });
+
+    expect(manager.getConfigPath()).toBeNull();
+  });
+
   it("swaps provider and config atomically in memory", () => {
     const providerA = { generateImage: vi.fn() };
     const providerB = { generateImage: vi.fn() };
@@ -39,5 +59,6 @@ describe("runtime config manager", () => {
       models: [],
       priorities: [],
     });
+    expect(manager.getConfigPath()).toBe("config/upstreams.json");
   });
 });

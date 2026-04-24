@@ -1,4 +1,12 @@
-type SaveState = "No changes" | "Unsaved changes" | "Validation failed" | "Ready to save" | "Saved";
+type SaveState =
+  | "Loading"
+  | "No changes"
+  | "Unsaved changes"
+  | "Validation failed"
+  | "Ready to save"
+  | "Saving"
+  | "Save failed"
+  | "Saved";
 
 export function ActionBar(props: {
   saveState: SaveState;
@@ -14,6 +22,10 @@ export function ActionBar(props: {
 }) {
   return (
     <div className="action-bar">
+      <div className="action-bar__status">
+        <span>Runtime Config</span>
+        <strong>{props.saveState}</strong>
+      </div>
       <div className="action-group">
         <button type="button" onClick={props.onAddChannel}>
           Add Channel
@@ -31,7 +43,6 @@ export function ActionBar(props: {
           Export JSON
         </button>
       </div>
-      <div className="save-state">{props.saveState}</div>
     </div>
   );
 }

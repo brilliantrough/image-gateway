@@ -5,11 +5,15 @@ import type {
   ProtocolType,
 } from "../../config/upstream-config.js";
 import { GatewayError } from "../../lib/errors.js";
+import { AliyunQwenImageProvider } from "../aliyun-qwen-image/adapter.js";
+import { ApimartAsyncImageProvider } from "../apimart-async/adapter.js";
+import { GoogleGeminiImageProvider } from "../google-gemini/adapter.js";
 import type { NormalizedImageRequest } from "../../types/image.js";
 import { OpenAICompatibleImageProvider } from "../openai-compatible/adapter.js";
 import { createOpenAICompatibleClient } from "../openai-compatible/client.js";
 import { OpenAIImageProvider } from "../openai/adapter.js";
 import type { ImageProvider } from "../types.js";
+import { VolcengineArkImageProvider } from "../volcengine-ark/adapter.js";
 
 export type UpstreamProviderFactory = (channel: ChannelConfig) => ImageProvider;
 
@@ -92,14 +96,26 @@ export function createProviderForChannel(channel: ChannelConfig): ImageProvider 
 
   switch (channel.protocolType) {
     case "openai":
-      return new OpenAIImageProvider(createOpenAICompatibleClient(channel));
+      return new OpenAIImageProvider(createOpenAICompatibleClient(channel), {
+        stripResponseFormat: channel.stripResponseFormat,
+      });
     case "azure-openai":
-    case "volcengine-ark":
     case "custom":
       return new OpenAICompatibleImageProvider(
         createOpenAICompatibleClient(channel),
         providerName,
+        {
+          stripResponseFormat: channel.stripResponseFormat,
+        },
       );
+    case "volcengine-ark":
+      return new VolcengineArkImageProvider(channel, providerName);
+    case "aliyun-qwen-image":
+      return new AliyunQwenImageProvider(channel, providerName);
+    case "apimart-async":
+      return new ApimartAsyncImageProvider(channel, providerName);
+    case "google-gemini":
+      return new GoogleGeminiImageProvider(channel, providerName);
     default:
       throw new GatewayError({
         statusCode: 400,

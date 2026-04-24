@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "channels": [
+    {
+      "id": "openai-main",
+      "name": "OpenAI Main",
+      "protocolType": "openai",
+      "baseUrl": "https://api.openai.com/v1",
+      "apiKey": "replace-with-openai-api-key",
+      "stripResponseFormat": false,
+      "enabled": false,
+      "description": "Official OpenAI Images API compatible upstream. Enable after adding a real key."
+    },
+    {
+      "id": "aliyun-token-plan",
+      "name": "Aliyun Qwen Image Token Plan",
+      "protocolType": "aliyun-qwen-image",
+      "baseUrl": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+      "apiKey": "replace-with-aliyun-token-plan-api-key",
+      "stripResponseFormat": false,
+      "enabled": false,
+      "description": "Aliyun Qwen Image multimodal-generation endpoint. Token Plan compatible-mode URLs are normalized by the adapter."
+    },
+    {
+      "id": "volcengine-ark-seed",
+      "name": "Volcengine Ark Seed",
+      "protocolType": "volcengine-ark",
+      "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+      "apiKey": "replace-with-volcengine-ark-api-key",
+      "stripResponseFormat": false,
+      "enabled": false,
+      "description": "ByteDance / Volcengine Ark image generation endpoint for Seedream and SeedEdit models."
+    },
+    {
+      "id": "apimart-async",
+      "name": "APIMart Async",
+      "protocolType": "apimart-async",
+      "baseUrl": "https://api.apimart.ai/v1",
+      "apiKey": "replace-with-apimart-api-key",
+      "stripResponseFormat": false,
+      "enabled": false,
+      "description": "APIMart async images API. The adapter submits an image task and polls until completion."
+    },
+    {
+      "id": "aihubmix-gemini",
+      "name": "AIHubMix Gemini",
+      "protocolType": "google-gemini",
+      "baseUrl": "https://aihubmix.com/gemini",
+      "apiKey": "replace-with-aihubmix-api-key",
+      "stripResponseFormat": false,
+      "enabled": false,
+      "description": "Gemini image generation through Google-compatible generateContent APIs. AIHubMix /gemini URLs are normalized to /gemini/v1beta."
+    }
+  ],
+  "models": [
+    {
+      "id": "openai-main-gpt-image-1",
+      "displayName": "gpt-image-1",
+      "providerModelName": "gpt-image-1",
+      "channelId": "openai-main",
+      "modelKind": "image-generation",
+      "enabled": true,
+      "description": "Example OpenAI image model route."
+    },
+    {
+      "id": "aliyun-token-plan-qwen-image-2",
+      "displayName": "qwen-image-2.0",
+      "providerModelName": "qwen-image-2.0",
+      "channelId": "aliyun-token-plan",
+      "modelKind": "image-generation",
+      "enabled": true,
+      "description": "Example Aliyun Qwen Image 2.0 route."
+    },
+    {
+      "id": "volcengine-ark-seedream-5-lite",
+      "displayName": "doubao-seedream-5-0-lite-260128",
+      "providerModelName": "doubao-seedream-5-0-lite-260128",
+      "channelId": "volcengine-ark-seed",
+      "modelKind": "image-generation",
+      "enabled": true,
+      "description": "Example Volcengine Ark Seedream route."
+    },
+    {
+      "id": "apimart-async-wan27-pro",
+      "displayName": "wan2.7-image-pro",
+      "providerModelName": "wan2.7-image-pro",
+      "channelId": "apimart-async",
+      "modelKind": "image-generation",
+      "enabled": true,
+      "description": "Example APIMart Wan 2.7 image route."
+    },
+    {
+      "id": "aihubmix-gemini-31-flash-image",
+      "displayName": "gemini-3.1-flash-image-preview",
+      "providerModelName": "gemini-3.1-flash-image-preview",
+      "channelId": "aihubmix-gemini",
+      "modelKind": "image-generation",
+      "enabled": true,
+      "description": "Example Gemini Flash image route."
+    }
+  ],
+  "priorities": [
+    {
+      "modelId": "openai-main-gpt-image-1",
+      "priority": 500
+    },
+    {
+      "modelId": "aliyun-token-plan-qwen-image-2",
+      "priority": 400
+    },
+    {
+      "modelId": "volcengine-ark-seedream-5-lite",
+      "priority": 300
+    },
+    {
+      "modelId": "apimart-async-wan27-pro",
+      "priority": 200
+    },
+    {
+      "modelId": "aihubmix-gemini-31-flash-image",
+      "priority": 100
+    }
+  ],
+  "frontendSettings": {
+    "invocationStudio": {
+      "minimalMode": false
+    }
+  }
+}

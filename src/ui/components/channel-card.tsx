@@ -40,70 +40,94 @@ export function ChannelCard(props: {
         </div>
       </header>
 
-      <label>
-        Channel Name
-        <input
-          value={props.channel.name}
-          onChange={(event) => props.onChange({ ...props.channel, name: event.target.value })}
-        />
-      </label>
+      <div className="channel-card__meta">
+        <div>
+          <span className="meta-label">Channel ID</span>
+          <code>{props.channel.id}</code>
+        </div>
+        <div>
+          <span className="meta-label">Protocol Family</span>
+          <code>{props.channel.protocolType}</code>
+        </div>
+      </div>
 
-      <label>
-        Base URL
-        <input
-          value={props.channel.baseUrl}
-          onChange={(event) => props.onChange({ ...props.channel, baseUrl: event.target.value })}
-        />
-      </label>
-
-      <label>
-        API Key
-        <input
-          type="password"
-          value={props.channel.apiKey}
-          onChange={(event) => props.onChange({ ...props.channel, apiKey: event.target.value })}
-        />
-      </label>
-
-      <label className="channel-card__toggle">
-        <input
-          type="checkbox"
-          checked={props.channel.enabled}
-          onChange={(event) => props.onChange({ ...props.channel, enabled: event.target.checked })}
-        />
-        Enabled
-      </label>
-
-      <label>
-        Protocol
-        <select
-          value={props.channel.protocolType}
-          onChange={(event) =>
-            props.onChange({
-              ...props.channel,
-              protocolType: event.target.value as ProtocolType,
-            })
-          }
-        >
-          {PROTOCOL_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {props.channel.protocolType === "custom" ? (
+      <section className="channel-card__form-grid">
         <label>
-          Custom Protocol Name
+          Channel Name
           <input
-            value={props.channel.protocolName ?? ""}
-            onChange={(event) =>
-              props.onChange({ ...props.channel, protocolName: event.target.value })
-            }
+            value={props.channel.name}
+            onChange={(event) => props.onChange({ ...props.channel, name: event.target.value })}
           />
         </label>
-      ) : null}
+
+        <label>
+          Protocol
+          <select
+            value={props.channel.protocolType}
+            onChange={(event) =>
+              props.onChange({
+                ...props.channel,
+                protocolType: event.target.value as ProtocolType,
+              })
+            }
+          >
+            {PROTOCOL_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="channel-card__field--full">
+          Base URL
+          <input
+            value={props.channel.baseUrl}
+            onChange={(event) => props.onChange({ ...props.channel, baseUrl: event.target.value })}
+          />
+        </label>
+
+        <label>
+          API Key
+          <input
+            type="password"
+            value={props.channel.apiKey}
+            onChange={(event) => props.onChange({ ...props.channel, apiKey: event.target.value })}
+          />
+        </label>
+
+        <label className="channel-card__toggle channel-card__compat-toggle">
+          <input
+            type="checkbox"
+            checked={props.channel.stripResponseFormat ?? false}
+            onChange={(event) =>
+              props.onChange({ ...props.channel, stripResponseFormat: event.target.checked })
+            }
+          />
+          Strip response_format for this provider
+        </label>
+
+        <label className="channel-card__toggle">
+          <input
+            type="checkbox"
+            checked={props.channel.enabled}
+            onChange={(event) => props.onChange({ ...props.channel, enabled: event.target.checked })}
+          />
+          Enabled
+        </label>
+
+        {props.channel.protocolType === "custom" ? (
+          <label className="channel-card__field--full">
+            Custom Protocol Name
+            <input
+              value={props.channel.protocolName ?? ""}
+              onChange={(event) =>
+                props.onChange({ ...props.channel, protocolName: event.target.value })
+              }
+            />
+          </label>
+        ) : null}
+      </section>
 
       <section className="provider-models">
         <div className="provider-models__header">
@@ -133,6 +157,16 @@ export function ChannelCard(props: {
         <div className="provider-models__list">
           {props.models.map((model) => (
             <div key={model.id} className="provider-models__row">
+              <div className="provider-models__meta">
+                <div>
+                  <span className="meta-label">Model ID</span>
+                  <code>{model.id}</code>
+                </div>
+                <div>
+                  <span className="meta-label">Routing Name</span>
+                  <code>{model.displayName || "unset"}</code>
+                </div>
+              </div>
               <label>
                 Provider Card Display Name
                 <input

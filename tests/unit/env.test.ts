@@ -26,4 +26,13 @@ describe("loadEnv", () => {
     expect(env.OPENAI_API_KEY).toBe("test-openai-key");
     expect(env.UPSTREAM_CONFIG_PATH).toBeUndefined();
   });
+
+  it("accepts ADMIN_API_TOKEN when present", () => {
+    const env = loadEnv({
+      OPENAI_API_KEY: "test-openai-key",
+      ADMIN_API_TOKEN: "admin-secret",
+    });
+
+    expect(env.ADMIN_API_TOKEN).toBe("admin-secret");
+  });
 });

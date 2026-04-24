@@ -9,6 +9,7 @@ export const initialConfig: GatewayUpstreamConfig = {
       protocolType: "openai",
       baseUrl: "https://api.openai.com/v1",
       apiKey: "openai-key",
+      stripResponseFormat: false,
       enabled: true,
     },
     {
@@ -17,6 +18,7 @@ export const initialConfig: GatewayUpstreamConfig = {
       protocolType: "azure-openai",
       baseUrl: "https://example.azure.com",
       apiKey: "azure-key",
+      stripResponseFormat: false,
       enabled: true,
     },
   ],
@@ -42,4 +44,9 @@ export const initialConfig: GatewayUpstreamConfig = {
     { modelId: "model-openai-gpt-image-1", priority: 100 },
     { modelId: "model-azure-gpt-image-1", priority: 90 },
   ],
+  frontendSettings: {
+    invocationStudio: {
+      minimalMode: false,
+    },
+  },
 };
