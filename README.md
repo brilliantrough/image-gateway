@@ -1,6 +1,9 @@
 # image-gateway
 
-TypeScript image-generation gateway exposing `POST /v1/images/generations` with an OpenAI-compatible+ contract.
+TypeScript image-generation gateway exposing OpenAI-compatible image endpoints with an OpenAI-compatible+ contract:
+
+- `POST /v1/images/generations`
+- `POST /v1/images/edits`
 
 This version supports two backend modes:
 
@@ -161,6 +164,20 @@ bash deploy/local-3100.sh logs
 ```
 
 The backend logs OpenAI-compatible upstream request start, success, failure, mode, model, and duration. If no upstream request log appears, the request probably did not reach this backend instance.
+
+### image2chat Upstream Setup
+
+`image2chat` can use this gateway as its upstream OpenAI Images API when you only need official OpenAI Image Generation models routed through `image-gateway`.
+
+Run `image-gateway` on one port, for example `3100`, then configure `image2chat` with:
+
+```bash
+OPENAI_BASE_URL=http://127.0.0.1:3100/v1
+OPENAI_API_KEY=not-used-by-gateway-but-required-by-image2chat
+IMAGES_API_MODE=native
+```
+
+`image2chat` will call `/v1/images/generations` for text-to-image and `/v1/images/edits` for image-to-image / iterative chat refinement. The gateway maps those requests to the configured upstream provider and normalizes the response.
 
 For a production-style build and local server startup:
 

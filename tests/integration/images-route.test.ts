@@ -65,6 +65,130 @@ describe("POST /v1/images/generations", () => {
   });
 });
 
+describe("POST /v1/images/edits", () => {
+  const provider = {
+    generateImage: vi.fn(),
+  };
+
+  const app = buildApp({ provider });
+
+  beforeAll(async () => {
+    await app.ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("routes a single image edit request as image-to-image", async () => {
+    provider.generateImage.mockReset();
+    provider.generateImage.mockResolvedValueOnce({
+      created: 1,
+      data: [{ b64_json: "abc", url: null, mime_type: "image/png", revised_prompt: null }],
+      usage: { image_count: 1 },
+      request_id: "req_edit",
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/images/edits",
+      payload: {
+        model: "gpt-image-1",
+        prompt: "make it cinematic",
+        image: "data:image/png;base64,Y2F0",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "image-to-image",
+        image: "data:image/png;base64,Y2F0",
+        images: [],
+      }),
+    );
+  });
+
+  it("accepts OpenAI-style array image edits", async () => {
+    provider.generateImage.mockReset();
+    provider.generateImage.mockResolvedValueOnce({
+      created: 1,
+      data: [{ b64_json: "abc", url: null, mime_type: "image/png", revised_prompt: null }],
+      usage: { image_count: 1 },
+      request_id: "req_edit_array",
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/images/edits",
+      payload: {
+        model: "gpt-image-1",
+        prompt: "combine these references",
+        image: ["data:image/png;base64,Y2F0", "data:image/png;base64,ZG9n"],
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "image-to-image",
+        images: ["data:image/png;base64,Y2F0", "data:image/png;base64,ZG9n"],
+      }),
+    );
+  });
+
+  it("routes masked edit requests as edit mode", async () => {
+    provider.generateImage.mockReset();
+    provider.generateImage.mockResolvedValueOnce({
+      created: 1,
+      data: [{ b64_json: "abc", url: null, mime_type: "image/png", revised_prompt: null }],
+      usage: { image_count: 1 },
+      request_id: "req_masked_edit",
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/images/edits",
+      payload: {
+        model: "gpt-image-1",
+        prompt: "replace the background",
+        image: "data:image/png;base64,Y2F0",
+        mask: "data:image/png;base64,bWFzaw==",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "edit",
+        mask: "data:image/png;base64,bWFzaw==",
+      }),
+    );
+  });
+
+  it("returns 400 when image is missing", async () => {
+    provider.generateImage.mockReset();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/images/edits",
+      payload: {
+        model: "gpt-image-1",
+        prompt: "edit this",
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(provider.generateImage).not.toHaveBeenCalled();
+    expect(response.json()).toMatchObject({
+      error: {
+        code: "missing_required_parameter",
+        param: "image",
+      },
+    });
+  });
+});
+
 describe("POST /v1/images/generations with runtime config manager", () => {
   it("uses the latest provider without rebuilding the app", async () => {
     const providerA = {

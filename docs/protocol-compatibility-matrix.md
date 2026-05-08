@@ -6,19 +6,21 @@ Update this file whenever a protocol, model family, endpoint mapping, or capabil
 
 ## Gateway Public Contract
 
-Public endpoint:
+Public endpoints:
 
 ```text
 POST /v1/images/generations
+POST /v1/images/edits
 ```
 
 Public request mode inference:
 
 | Gateway input | Inferred mode | Intended behavior |
 |---|---|---|
-| `prompt` only | `text-to-image` | Generate an image from text. |
-| `prompt` + `image` or `images` | `image-to-image` | Use one or more source images as reference input. |
-| `prompt` + `image` or `images` + `mask` | `edit` | Edit only the masked area when the upstream supports masks. |
+| `/v1/images/generations` + `prompt` only | `text-to-image` | Generate an image from text. |
+| `/v1/images/generations` + `prompt` + `image` or `images` | `image-to-image` | Backward-compatible gateway extension. |
+| `/v1/images/edits` + `prompt` + `image` or `images` | `image-to-image` | OpenAI-compatible image edit entrypoint. |
+| either endpoint + `prompt` + `image` or `images` + `mask` | `edit` | Edit only the masked area when the upstream supports masks. |
 
 Important schema behavior:
 
@@ -26,6 +28,7 @@ Important schema behavior:
 |---|---|
 | `image` and `images` are mutually exclusive in the public request schema. | Enforced |
 | `mask` requires either `image` or `images`. | Enforced |
+| `/v1/images/edits` requires `image` or array-valued OpenAI-style `image`. | Enforced |
 | Public response is normalized to `data[].url` or `data[].b64_json`. | Enforced by adapters |
 | Public `model` is the configured model `displayName`; the router sends `providerModelName` upstream. | Enforced |
 
