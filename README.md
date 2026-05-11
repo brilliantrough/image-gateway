@@ -179,6 +179,8 @@ IMAGES_API_MODE=native
 
 `image2chat` will call `/v1/images/generations` for text-to-image and `/v1/images/edits` for image-to-image / iterative chat refinement. The gateway maps those requests to the configured upstream provider and normalizes the response.
 
+For `/v1/images/edits`, both JSON and multipart form-data are accepted. Multipart uploads from `image2chat` are converted to internal `data:image/...;base64` inputs before routing to the configured upstream. The OpenAI `moderation` field is accepted and forwarded for OpenAI-compatible upstreams.
+
 For a production-style build and local server startup:
 
 ```bash

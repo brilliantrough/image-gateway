@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import FormData from "form-data";
 import { buildApp } from "../../src/app.js";
 import { createRuntimeConfigManager } from "../../src/runtime/config-manager.js";
 
@@ -162,6 +163,70 @@ describe("POST /v1/images/edits", () => {
       expect.objectContaining({
         mode: "edit",
         mask: "data:image/png;base64,bWFzaw==",
+      }),
+    );
+  });
+
+  it("accepts multipart image edits from image2chat", async () => {
+    provider.generateImage.mockReset();
+    provider.generateImage.mockResolvedValueOnce({
+      created: 1,
+      data: [{ b64_json: "abc", url: null, mime_type: "image/png", revised_prompt: null }],
+      usage: { image_count: 1 },
+      request_id: "req_multipart_edit",
+    });
+    const form = new FormData();
+    form.append("model", "gpt-image-1");
+    form.append("prompt", "make this cat cinematic");
+    form.append("size", "1024x1024");
+    form.append("quality", "high");
+    form.append("output_format", "png");
+    form.append("moderation", "auto");
+    form.append("image", Buffer.from("cat"), { filename: "cat.png", contentType: "image/png" });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/images/edits",
+      headers: form.getHeaders(),
+      payload: form,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "image-to-image",
+        image: "data:image/png;base64,Y2F0",
+        moderation: "auto",
+        output_format: "png",
+      }),
+    );
+  });
+
+  it("accepts JSON moderation on image edit requests", async () => {
+    provider.generateImage.mockReset();
+    provider.generateImage.mockResolvedValueOnce({
+      created: 1,
+      data: [{ b64_json: "abc", url: null, mime_type: "image/png", revised_prompt: null }],
+      usage: { image_count: 1 },
+      request_id: "req_moderation_edit",
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v1/images/edits",
+      payload: {
+        model: "gpt-image-1",
+        prompt: "make it cinematic",
+        image: "data:image/png;base64,Y2F0",
+        moderation: "low",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "image-to-image",
+        moderation: "low",
       }),
     );
   });

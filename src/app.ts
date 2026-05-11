@@ -1,4 +1,5 @@
 import fastifyStatic from "@fastify/static";
+import fastifyMultipart from "@fastify/multipart";
 import path from "node:path";
 import Fastify from "fastify";
 import { ZodError } from "zod";
@@ -23,6 +24,13 @@ export function buildApp(options: {
     bodyLimit: 25 * 1024 * 1024,
   });
   const uiRoot = options.uiRoot ?? path.resolve("dist/ui");
+
+  app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 25 * 1024 * 1024,
+      files: 20,
+    },
+  });
 
   app.register(fastifyStatic, {
     root: uiRoot,

@@ -29,6 +29,7 @@ Important schema behavior:
 | `image` and `images` are mutually exclusive in the public request schema. | Enforced |
 | `mask` requires either `image` or `images`. | Enforced |
 | `/v1/images/edits` requires `image` or array-valued OpenAI-style `image`. | Enforced |
+| `/v1/images/edits` accepts JSON and multipart form-data image uploads. | Enforced |
 | Public response is normalized to `data[].url` or `data[].b64_json`. | Enforced by adapters |
 | Public `model` is the configured model `displayName`; the router sends `providerModelName` upstream. | Enforced |
 
@@ -136,9 +137,10 @@ Mapping:
 | `output_compression` | `output_compression` | Officially for `gpt-image-*` with `jpeg/webp`. |
 | `extra_body.moderation` | `moderation` | Officially for `gpt-image-*`; the current adapter passes it via `extra_body`. |
 | `user` | `user` | Direct. |
-| `image` | `image` | In edit modes, converted to multipart file upload. Accepts `data:image/...;base64`, plain base64, or http(s) URL fetchable by the gateway. |
+| `image` | `image` | In edit modes, converted to multipart file upload for OpenAI-compatible upstreams. Public `/v1/images/edits` accepts JSON strings, JSON string arrays, and multipart file fields. |
 | `images` | `image` | In edit modes, converted to array-valued multipart file upload. |
 | `mask` | `mask` | In edit mode, converted to multipart file upload. |
+| `moderation` | `moderation` | Accepted for OpenAI-compatible `gpt-image-*` calls and forwarded directly. |
 | `seed` | `seed` | Only forwarded when adapter option `supportsSeed` is enabled. No runtime protocol currently uses this generic path for seed. |
 | `negative_prompt` | None | Rejected by this adapter path. |
 | `extra_body` | merged request fields | Reserved fields cannot override routed/core fields. |

@@ -12,6 +12,7 @@ export const imageGenerationRequestSchema = z
     n: z.number().int().positive().default(1),
     response_format: responseFormatSchema.default("b64_json"),
     background: z.string().min(1).optional(),
+    moderation: z.string().min(1).optional(),
     output_format: z.string().min(1).optional(),
     output_compression: z.number().int().min(0).max(100).optional(),
     quality: z.string().min(1).optional(),
