@@ -25,10 +25,10 @@ Optional:
 ```bash
 ADMIN_API_TOKEN=replace-with-a-long-random-token
 LOG_LEVEL=info
-UPSTREAM_REQUEST_TIMEOUT_MS=600000
+UPSTREAM_REQUEST_TIMEOUT_MS=1800000
 ```
 
-`UPSTREAM_REQUEST_TIMEOUT_MS` should be long enough for slow image-to-image or edit calls. The deployment templates default to 10 minutes.
+`UPSTREAM_REQUEST_TIMEOUT_MS` should be long enough for slow image-to-image or edit calls. The deployment templates default to 30 minutes.
 
 Notes:
 
@@ -116,9 +116,9 @@ server {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_connect_timeout 60s;
-        proxy_send_timeout 600s;
-        proxy_read_timeout 600s;
-        send_timeout 600s;
+        proxy_send_timeout 1800s;
+        proxy_read_timeout 1800s;
+        send_timeout 1800s;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
@@ -233,4 +233,4 @@ Image-to-image and edit calls can run for several minutes. Configure every layer
 - Vite dev proxy timeout when using `npm run dev:ui`.
 - Nginx or Caddy reverse proxy read/send timeout in deployment.
 
-The included Vite config and Nginx template use 10-minute defaults. If the browser shows a plain non-JSON `Request failed with status 504`, the failure likely came from a proxy layer. If the backend receives the request, logs should include `upstream_image_request_started` and either `upstream_image_request_succeeded` or `upstream_image_generation_failed`.
+The included Vite config and Nginx template use 30-minute defaults. If the browser shows a plain non-JSON `Request failed with status 504`, the failure likely came from a proxy layer. If the backend receives the request, logs should include `upstream_image_request_started` and either `upstream_image_request_succeeded` or `upstream_image_generation_failed`.

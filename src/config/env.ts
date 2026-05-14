@@ -9,7 +9,7 @@ const envSchema = z
     ADMIN_USERNAME: z.string().trim().min(1).default("admin"),
     ADMIN_PASSWORD: z.string().trim().min(1).optional(),
     ADMIN_SESSION_SECRET: z.string().trim().min(16).optional(),
-    UPSTREAM_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(600_000),
+    UPSTREAM_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(1_800_000),
     OPENAI_API_KEY: z.string().default(""),
     OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
     UPSTREAM_CONFIG_PATH: z.string().trim().min(1).optional(),

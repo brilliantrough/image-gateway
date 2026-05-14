@@ -13,7 +13,7 @@ export function createOpenAICompatibleClient(
 
 function getUpstreamRequestTimeoutMs(): number {
   const raw = process.env.UPSTREAM_REQUEST_TIMEOUT_MS;
-  const parsed = raw ? Number(raw) : 600_000;
+  const parsed = raw ? Number(raw) : 1_800_000;
 
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 600_000;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1_800_000;
 }
